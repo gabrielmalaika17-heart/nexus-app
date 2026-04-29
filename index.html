@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#080a0d" />
+    <meta name="theme-color" content="#020617" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="NEXUS" />
@@ -39,7 +39,178 @@
         </section>
 
         <section class="content">
-          <article class="screen active" id="planifScreen">
+          <article class="screen active" id="homeScreen">
+            <div class="home-command">
+              <header class="home-head">
+                <div>
+                  <p class="eyebrow">NEXUS OS</p>
+                  <h2>Centre de commande</h2>
+                  <p>Ton corps. Tes données. Ton évolution.</p>
+                </div>
+                <div class="home-actions">
+                  <button type="button" id="homeDate">Mercredi 29 avril 2026</button>
+                  <button type="button" title="Notifications">◌</button>
+                  <button type="button" title="Paramètres">⚙</button>
+                </div>
+              </header>
+
+              <section class="home-grid">
+                <aside class="home-column">
+                  <article class="home-card global-card">
+                    <h3>Aperçu global</h3>
+                    <div class="home-score-ring" style="--value:72"><strong>72%</strong><span>Score global</span></div>
+                    <ul>
+                      <li>Corps <b>74%</b></li>
+                      <li>Énergie <b>68%</b></li>
+                      <li>Récupération <b>70%</b></li>
+                      <li>Mental <b>78%</b></li>
+                    </ul>
+                  </article>
+
+                  <article class="home-card hydration-card">
+                    <h3>Hydratation</h3>
+                    <div class="split-row">
+                      <div>
+                        <strong id="homeHydrationAmount">1.0 / 2.5 L</strong>
+                        <p>Objectif quotidien</p>
+                        <b id="homeHydrationStatus">Niveau d'hydratation : Faible</b>
+                        <p id="homeHydrationMessage">Tu es déshydraté. Bois plus d'eau.</p>
+                      </div>
+                      <div class="home-score-ring small" id="homeWaterProgress" style="--value:40"><strong>40%</strong></div>
+                    </div>
+                    <button class="home-primary" id="homeAddWater" type="button">+ Ajouter de l'eau</button>
+                    <div class="water-buttons">
+                      <button type="button" data-home-water="0.25">250 ml</button>
+                      <button type="button" data-home-water="0.5">500 ml</button>
+                      <button type="button" data-home-water="0.75">750 ml</button>
+                      <button type="button" data-home-water="1">1 L</button>
+                    </div>
+                  </article>
+
+                  <article class="home-card nutrition-home-card">
+                    <h3>Nutrition</h3>
+                    <div class="split-row">
+                      <div class="home-score-ring small" id="homeNutritionProgress" style="--value:69"><strong>1658</strong><span>kcal</span></div>
+                      <ul>
+                        <li>Protéines <b id="homeProtein">128 / 180 g</b></li>
+                        <li>Glucides <b id="homeCarbs">180 / 300 g</b></li>
+                        <li>Lipides <b id="homeFat">58 / 80 g</b></li>
+                      </ul>
+                    </div>
+                    <div class="home-card-actions">
+                      <button type="button" id="openHomeMeal">Ajouter un repas</button>
+                      <label class="home-file">Photo du plat<input id="homeMealPhoto" type="file" accept="image/*" capture="environment" /></label>
+                      <button type="button" id="homeEstimateMeal">Estimer avec Nexus IA</button>
+                    </div>
+                    <form class="home-meal-form collapsed" id="homeMealForm">
+                      <input id="homeMealName" type="text" placeholder="Nom du repas" />
+                      <input id="homeMealCalories" type="number" placeholder="Calories" />
+                      <button type="submit">Enregistrer le repas</button>
+                    </form>
+                  </article>
+
+                  <article class="home-card sleep-home-card">
+                    <h3>Sommeil</h3>
+                    <div class="split-row">
+                      <div class="home-score-ring small" style="--value:87"><strong>87</strong><span>/100</span></div>
+                      <ul>
+                        <li>Durée <b id="homeSleepDuration">7h32</b></li>
+                        <li>Profond <b id="homeSleepDeep">2h15</b></li>
+                        <li>Léger <b id="homeSleepLight">4h17</b></li>
+                        <li>Réveils <b id="homeSleepWakeups">2 fois</b></li>
+                      </ul>
+                    </div>
+                    <div class="sleep-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                    <button type="button" class="home-secondary" data-screen-jump="sleepScreen">Voir détails du sommeil</button>
+                  </article>
+
+                  <article class="home-card nexus-home-card">
+                    <h3>Nexus IA</h3>
+                    <p id="homeAiMessage">Tu as bien travaillé tes bras aujourd'hui. Pense à t'hydrater et à manger assez de protéines. Ton sommeil était de qualité.</p>
+                    <button type="button" id="homeRecommendations">Voir recommandations</button>
+                    <div class="recommendations collapsed" id="homeRecommendationsPanel">
+                      <p>✓ Bois 500 ml d'eau dans la prochaine heure.</p>
+                      <p>✓ Ajoute 30 g de protéines au prochain repas.</p>
+                      <p>✓ Évite de retravailler les bras lourdement demain.</p>
+                    </div>
+                  </article>
+                </aside>
+
+                <section class="human-stage">
+                  <div class="human-date-pill">Mercredi 29 avril 2026</div>
+                  <div class="human-body-dashboard" id="humanBodyDashboard">
+                    <div class="scan-beam"></div>
+                    <button class="body-zone brain" data-zone="brain">Cerveau</button>
+                    <button class="body-zone heart-zone" data-zone="cardio">Coeur</button>
+                    <button class="body-zone lungs" data-zone="lungs">Poumons</button>
+                    <button class="body-zone shoulders" data-zone="shoulders">Épaules</button>
+                    <button class="body-zone arms left" data-zone="arms">Bras</button>
+                    <button class="body-zone arms right" data-zone="arms">Bras</button>
+                    <button class="body-zone chest" data-zone="chest">Pectoraux</button>
+                    <button class="body-zone core" data-zone="core">Core</button>
+                    <button class="body-zone digestion" data-zone="digestion">Digestion</button>
+                    <button class="body-zone legs left" data-zone="legs">Jambes</button>
+                    <button class="body-zone legs right" data-zone="legs">Jambes</button>
+                    <button class="body-zone calves left" data-zone="calves">Mollets</button>
+                    <button class="body-zone calves right" data-zone="calves">Mollets</button>
+                  </div>
+                  <div class="zone-detail" id="zoneDetail">Clique sur une zone du corps pour voir les détails.</div>
+                  <section class="body-zones-grid" id="bodyZonesGrid"></section>
+                </section>
+
+                <aside class="home-column">
+                  <article class="home-card activity-card">
+                    <h3>Activité du jour</h3>
+                    <ul>
+                      <li>Salle - Pectoraux & Triceps <b>1h15</b></li>
+                      <li>Vélo <b>45 min</b></li>
+                      <li>Marche <b>30 min</b></li>
+                      <li>Étirements <b>15 min</b></li>
+                      <li>Calories brûlées <b id="homeBurnedCalories">680 kcal</b></li>
+                    </ul>
+                  </article>
+
+                  <article class="home-card body-state-card">
+                    <h3>État du corps</h3>
+                    <ul>
+                      <li>Fréquence cardiaque <b>52 bpm</b></li>
+                      <li>Variabilité HRV <b>68 ms</b></li>
+                      <li>Température <b>36.6 °C</b></li>
+                      <li>Oxygène sanguin <b>97 %</b></li>
+                      <li>Stress <b>32 %</b></li>
+                    </ul>
+                  </article>
+
+                  <article class="home-card digestion-card">
+                    <h3>Digestion</h3>
+                    <div class="digestive-icon">◖◉◗</div>
+                    <p>État digestif <strong id="homeDigestionStatus">Bonne</strong></p>
+                    <p>Dernier repas <strong id="homeLastMeal">12:30</strong></p>
+                    <p>Prochaine digestion <strong id="homeNextDigestion">dans 2h15</strong></p>
+                  </article>
+
+                  <article class="home-card recovery-card">
+                    <h3>Récupération</h3>
+                    <div class="home-score-ring small" style="--value:70"><strong>70%</strong><span>récup.</span></div>
+                    <ul>
+                      <li>Fatigue musculaire <b>Moyenne</b></li>
+                      <li>Douleurs <b>Aucune</b></li>
+                      <li>Courbatures <b>Légères</b></li>
+                      <li>Énergie demain <b>Bonne</b></li>
+                    </ul>
+                  </article>
+
+                  <article class="home-card goals-card">
+                    <h3>Objectifs du jour</h3>
+                    <div id="homeGoals"></div>
+                    <button type="button" class="home-secondary">Voir tous les objectifs</button>
+                  </article>
+                </aside>
+              </section>
+            </div>
+          </article>
+
+          <article class="screen" id="planifScreen">
             <div class="section-head">
               <div>
                 <p class="eyebrow">◈ PLANIF</p>
@@ -544,11 +715,11 @@
         </div>
 
         <nav class="tabbar" aria-label="Navigation principale">
-          <button class="active" data-screen="planifScreen"><span>◈</span>Planif</button>
+          <button class="active" data-screen="homeScreen"><span>⌂</span>Accueil</button>
+          <button data-screen="planifScreen"><span>◈</span>Planif</button>
           <button data-screen="fitnessScreen"><span>⚡</span>Fitness</button>
           <button data-screen="sleepScreen"><span>◉</span>Sommeil</button>
-          <button data-screen="blockScreen"><span>🛡</span>Bloquer</button>
-          <button data-screen="aiScreen"><span>◆</span>Nexus</button>
+          <button data-screen="aiScreen"><span>⬡</span>Nexus</button>
         </nav>
       </section>
     </main>

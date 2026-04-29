@@ -60,6 +60,50 @@ const storageKey = "nexus-pwa-state-v2";
 let focusInterval;
 let currentExercise = null;
 
+const userDailyData = {
+  hydration: {
+    current: 1.0,
+    target: 2.5
+  },
+  nutrition: {
+    calories: 1658,
+    targetCalories: 2400,
+    protein: 128,
+    proteinTarget: 180,
+    carbs: 180,
+    carbsTarget: 300,
+    fat: 58,
+    fatTarget: 80
+  },
+  workout: {
+    trainedZones: ["arms", "shoulders", "chest"],
+    intensity: {
+      arms: "high",
+      shoulders: "high",
+      chest: "medium",
+      legs: "medium",
+      calves: "low"
+    }
+  },
+  sleep: {
+    score: 87,
+    duration: "7h32",
+    deep: "2h15",
+    light: "4h17",
+    wakeups: 2
+  },
+  digestion: {
+    status: "Bonne",
+    lastMeal: "12:30",
+    nextDigestion: "dans 2h15"
+  },
+  activity: {
+    steps: 6200,
+    caloriesBurned: 680,
+    cardio: "Bonne santé"
+  }
+};
+
 const defaultTasks = [
   { id: "t-1", title: "Prière du matin", category: "priere", date: "", time: "05:00", duration: 20, priority: 3, reminder: 15, repeat: "daily", note: "Commencer la journée calmement.", status: "todo", done: false },
   { id: "t-2", title: "Marche", category: "marche", date: "", time: "06:00", duration: 30, priority: 2, reminder: 15, repeat: "daily", note: "Cardio léger.", status: "todo", done: false },
@@ -191,6 +235,7 @@ const defaultState = {
   blockedApps: { Instagram: true, TikTok: true, X: true, Facebook: true, Snapchat: false, YouTube: false },
   focus: { active: false, end: "19:30", startedAt: null },
   holoMode: true,
+  homeDaily: userDailyData,
   chat: [{ who: "ai", text: "Je suis branché sur ton agenda, ton sommeil, ton fitness, ta nutrition et ton mode focus. Quelle action veux-tu optimiser maintenant ?" }]
 };
 
@@ -459,6 +504,127 @@ function renderPlannerCategories() {
     document.getElementById("taskPriority").value = cat.id === "sommeil" ? 5 : ["travail", "etudes"].includes(cat.id) ? 4 : ["priere", "eau", "fitness"].includes(cat.id) ? 3 : 2;
     haptic();
   }));
+}
+
+function getHomeDailyData() {
+  state.homeDaily = state.homeDaily || structuredCloneSafe(userDailyData);
+  state.homeDaily.hydration = state.homeDaily.hydration || structuredCloneSafe(userDailyData.hydration);
+  state.homeDaily.nutrition = state.homeDaily.nutrition || structuredCloneSafe(userDailyData.nutrition);
+  state.homeDaily.workout = state.homeDaily.workout || structuredCloneSafe(userDailyData.workout);
+  state.homeDaily.sleep = state.homeDaily.sleep || structuredCloneSafe(userDailyData.sleep);
+  state.homeDaily.digestion = state.homeDaily.digestion || structuredCloneSafe(userDailyData.digestion);
+  state.homeDaily.activity = state.homeDaily.activity || structuredCloneSafe(userDailyData.activity);
+  return state.homeDaily;
+}
+
+function percent(value, target) {
+  return Math.min(100, Math.max(0, Math.round((Number(value || 0) / Math.max(1, Number(target || 1))) * 100)));
+}
+
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value;
+}
+
+function setRing(id, value, label) {
+  const ring = document.getElementById(id);
+  if (!ring) return;
+  ring.style.setProperty("--value", value);
+  const strong = ring.querySelector("strong");
+  if (strong) strong.textContent = label ?? `${value}%`;
+}
+
+const bodyZoneMeta = {
+  brain: { label: "Cerveau", state: "Bonne activité", tone: "mental", detail: "Activité mentale stable. Garde des pauses courtes pour rester lucide." },
+  shoulders: { label: "Épaules", state: "Très sollicitées", tone: "high", detail: "Épaules très sollicitées aujourd'hui. Évite une séance lourde demain." },
+  arms: { label: "Bras", state: "Très sollicités", tone: "high", detail: "Bras chargés après pectoraux et triceps. Priorité protéines et hydratation." },
+  chest: { label: "Pectoraux", state: "Sollicités", tone: "medium", detail: "Pectoraux travaillés modérément. Récupération active recommandée." },
+  core: { label: "Abdominaux", state: "Stable", tone: "normal", detail: "Core stable. Tu peux ajouter 8 à 10 minutes de gainage léger." },
+  back: { label: "Dos", state: "Sollicité", tone: "medium", detail: "Dos sollicité indirectement. Pense à garder une posture neutre." },
+  digestion: { label: "Ventre / digestion", state: "En digestion", tone: "digest", detail: "Digestion active depuis le dernier repas. Attends avant un effort intense." },
+  legs: { label: "Jambes", state: "Sollicitées", tone: "medium", detail: "Jambes modérément sollicitées par le vélo et la marche." },
+  calves: { label: "Mollets", state: "Peu sollicités", tone: "low", detail: "Mollets peu sollicités. Une marche légère suffit aujourd'hui." },
+  cardio: { label: "Cardio", state: "Bonne santé", tone: "good", detail: "Cardio bon. Pas et vélo soutiennent bien ton objectif." },
+  lungs: { label: "Poumons", state: "Respiration stable", tone: "normal", detail: "Respiration stable. Les étirements et la marche aident la récupération." }
+};
+
+function toneFromZone(zone, data) {
+  if (zone === "brain") return "mental";
+  if (zone === "digestion") return "digest";
+  if (zone === "cardio") return "good";
+  if (zone === "lungs") return "normal";
+  return data.workout.intensity[zone] || bodyZoneMeta[zone]?.tone || "normal";
+}
+
+function renderHomeDashboard() {
+  const data = getHomeDailyData();
+  const hydrationPercent = percent(data.hydration.current, data.hydration.target);
+  const nutritionPercent = percent(data.nutrition.calories, data.nutrition.targetCalories);
+  const hydrationLow = hydrationPercent < 50;
+
+  setText("homeHydrationAmount", `${data.hydration.current.toFixed(1)} / ${data.hydration.target} L`);
+  setText("homeHydrationStatus", `Niveau d'hydratation : ${hydrationLow ? "Faible" : "Correct"}`);
+  setText("homeHydrationMessage", hydrationLow ? "Tu es déshydraté. Bois plus d'eau." : "Bon rythme. Continue à boire régulièrement.");
+  setRing("homeWaterProgress", hydrationPercent);
+
+  setRing("homeNutritionProgress", nutritionPercent, `${data.nutrition.calories}`);
+  setText("homeProtein", `${data.nutrition.protein} / ${data.nutrition.proteinTarget} g`);
+  setText("homeCarbs", `${data.nutrition.carbs} / ${data.nutrition.carbsTarget} g`);
+  setText("homeFat", `${data.nutrition.fat} / ${data.nutrition.fatTarget} g`);
+  setText("homeSleepDuration", data.sleep.duration);
+  setText("homeSleepDeep", data.sleep.deep);
+  setText("homeSleepLight", data.sleep.light);
+  setText("homeSleepWakeups", `${data.sleep.wakeups} fois`);
+  setText("homeBurnedCalories", `${data.activity.caloriesBurned} kcal`);
+  setText("homeDigestionStatus", data.digestion.status);
+  setText("homeLastMeal", data.digestion.lastMeal);
+  setText("homeNextDigestion", data.digestion.nextDigestion);
+
+  document.querySelectorAll("[data-zone]").forEach((zoneButton) => {
+    const zone = zoneButton.dataset.zone;
+    const tone = toneFromZone(zone, data);
+    zoneButton.dataset.tone = hydrationLow && ["core", "legs", "arms"].includes(zone) ? "hydration-low" : tone;
+  });
+
+  const zones = ["brain", "shoulders", "arms", "chest", "back", "legs", "calves", "cardio", "digestion"];
+  const zoneGrid = document.getElementById("bodyZonesGrid");
+  if (zoneGrid) {
+    zoneGrid.innerHTML = zones.map((zone) => {
+      const meta = bodyZoneMeta[zone];
+      const tone = toneFromZone(zone, data);
+      return `<button type="button" data-zone-card="${zone}" data-tone="${tone}">
+        <span>${zone === "brain" ? "◌" : zone === "cardio" ? "♡" : zone === "digestion" ? "◉" : "⬡"}</span>
+        <strong>${meta.label}</strong>
+        <small>${meta.state}</small>
+      </button>`;
+    }).join("");
+    zoneGrid.querySelectorAll("[data-zone-card]").forEach((button) => {
+      button.addEventListener("click", () => showBodyZone(button.dataset.zoneCard));
+    });
+  }
+
+  const goals = [
+    ["Boire 2.5 L d'eau", hydrationPercent],
+    ["2 400 kcal", nutritionPercent],
+    ["Protéines 180 g", percent(data.nutrition.protein, data.nutrition.proteinTarget)],
+    ["Sommeil 7-8h", data.sleep.score],
+    ["10 000 pas", percent(data.activity.steps, 10000)]
+  ];
+  const goalsNode = document.getElementById("homeGoals");
+  if (goalsNode) {
+    goalsNode.innerHTML = goals.map(([label, value]) => `<div class="home-goal-row">
+      <span>✓ ${label}</span>
+      <b>${value}%</b>
+      <i style="--value:${value}%"><em></em></i>
+    </div>`).join("");
+  }
+}
+
+function showBodyZone(zone) {
+  const meta = bodyZoneMeta[zone] || bodyZoneMeta.core;
+  const detail = document.getElementById("zoneDetail");
+  if (detail) detail.innerHTML = `<strong>${meta.label}</strong><span>${meta.state}</span><p>${meta.detail}</p>`;
+  haptic();
 }
 
 function renderFitnessMetrics() {
@@ -965,10 +1131,18 @@ function setupEvents() {
     const macros = estimateMacros(foodText || "repas moyen", portion);
     if (document.getElementById("foodCalories").value) macros.calories = Number(document.getElementById("foodCalories").value);
     state.nutrition.meals.push({ id: uid(), name: foodText || (photo ? `Photo : ${photo.name}` : "Repas ajouté"), portion, source: photo ? "photo + estimation IA simulée" : "manuel / IA locale", ...macros });
+    const homeData = getHomeDailyData();
+    homeData.nutrition.calories += macros.calories;
+    homeData.nutrition.protein += macros.protein;
+    homeData.nutrition.carbs += macros.carbs;
+    homeData.nutrition.fat += macros.fat;
+    homeData.digestion.lastMeal = new Intl.DateTimeFormat("fr-CA", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+    homeData.digestion.nextDigestion = "dans 2h15";
     document.getElementById("foodText").value = "";
     document.getElementById("foodCalories").value = "";
     document.getElementById("foodPhoto").value = "";
     renderNutrition();
+    renderHomeDashboard();
     addMessage(`Repas ajouté : ${macros.calories} kcal estimées. Tu peux corriger les valeurs si besoin.`, "ai");
   });
 
@@ -980,9 +1154,79 @@ function setupEvents() {
 
   document.querySelectorAll("[data-water]").forEach((button) => button.addEventListener("click", () => {
     state.nutrition.water = Math.min(8, Number((state.nutrition.water + Number(button.dataset.water)).toFixed(2)));
+    getHomeDailyData().hydration.current = state.nutrition.water;
     saveState();
     renderNutrition();
+    renderHomeDashboard();
   }));
+
+  document.querySelectorAll("[data-home-water]").forEach((button) => button.addEventListener("click", () => {
+    const data = getHomeDailyData();
+    data.hydration.current = Math.min(8, Number((data.hydration.current + Number(button.dataset.homeWater)).toFixed(2)));
+    state.nutrition.water = data.hydration.current;
+    saveState();
+    renderHomeDashboard();
+    renderNutrition();
+    renderFitnessMetrics();
+  }));
+
+  document.getElementById("homeAddWater")?.addEventListener("click", () => {
+    document.querySelector('[data-home-water="0.5"]')?.click();
+  });
+
+  document.getElementById("openHomeMeal")?.addEventListener("click", () => {
+    document.getElementById("homeMealForm")?.classList.toggle("collapsed");
+    haptic();
+  });
+
+  document.getElementById("homeMealForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = getHomeDailyData();
+    const name = document.getElementById("homeMealName").value.trim() || "Repas ajouté";
+    const calories = Number(document.getElementById("homeMealCalories").value || 520);
+    const macros = estimateMacros(name, 1);
+    macros.calories = calories;
+    data.nutrition.calories += calories;
+    data.nutrition.protein += macros.protein;
+    data.nutrition.carbs += macros.carbs;
+    data.nutrition.fat += macros.fat;
+    state.nutrition.meals.push({ id: uid(), name, portion: 1, source: "Accueil Nexus", ...macros });
+    data.digestion.lastMeal = new Intl.DateTimeFormat("fr-CA", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+    data.digestion.nextDigestion = "dans 2h15";
+    document.getElementById("homeMealName").value = "";
+    document.getElementById("homeMealCalories").value = "";
+    document.getElementById("homeMealForm").classList.add("collapsed");
+    saveState();
+    renderHomeDashboard();
+    renderNutrition();
+    addMessage(`${name} ajouté depuis l'accueil : ${calories} kcal estimées.`, "ai");
+  });
+
+  document.getElementById("homeEstimateMeal")?.addEventListener("click", () => {
+    const mealName = document.getElementById("homeMealName");
+    const mealCalories = document.getElementById("homeMealCalories");
+    document.getElementById("homeMealForm")?.classList.remove("collapsed");
+    if (mealName && !mealName.value) mealName.value = "Saumon, riz, légumes";
+    if (mealCalories) mealCalories.value = 520;
+    addMessage("Estimation simulée Nexus IA : saumon, riz et légumes ≈ 520 kcal, 35g protéines, 45g glucides, 18g lipides.", "ai");
+    haptic();
+  });
+
+  document.getElementById("homeMealPhoto")?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    document.getElementById("homeMealForm")?.classList.remove("collapsed");
+    document.getElementById("homeMealName").value = `Photo : ${file.name}`;
+    document.getElementById("homeMealCalories").value = 520;
+    addMessage("Photo reçue. Sans backend IA réel, Nexus prépare une estimation simulée modifiable.", "ai");
+  });
+
+  document.getElementById("homeRecommendations")?.addEventListener("click", () => {
+    document.getElementById("homeRecommendationsPanel")?.classList.toggle("collapsed");
+    haptic();
+  });
+
+  document.querySelectorAll("[data-zone]").forEach((button) => button.addEventListener("click", () => showBodyZone(button.dataset.zone)));
 
   document.getElementById("profileForm").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -1108,6 +1352,7 @@ setToday();
 document.getElementById("taskDate").value = todayISO();
 setupEvents();
 renderHoloMode();
+renderHomeDashboard();
 renderTasks();
 renderPlannerCategories();
 renderFitnessViews();
