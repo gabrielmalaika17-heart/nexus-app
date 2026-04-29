@@ -1,0 +1,13 @@
+{
+  "appId": "com.nexus.app",
+  "appName": "Nexus",
+  "webDir": ".",
+  "server": {
+    "iosScheme": "nexus"
+  },
+  "plugins": {
+    "Camera": {
+      "permissions": ["camera", "photos"]
+    }
+  }
+}

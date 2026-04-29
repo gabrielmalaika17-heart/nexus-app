@@ -59,6 +59,97 @@ const priorityMeta = {
 const storageKey = "nexus-pwa-state-v2";
 let focusInterval;
 let currentExercise = null;
+let lastMealPhoto = null;
+
+function capacitorPlugin(name) {
+  return window.Capacitor?.Plugins?.[name] || null;
+}
+
+function isNativeApp() {
+  return Boolean(window.Capacitor?.isNativePlatform?.());
+}
+
+async function captureMealPhoto(fallbackInputId) {
+  const Camera = capacitorPlugin("Camera");
+  if (!Camera?.getPhoto) {
+    document.getElementById(fallbackInputId)?.click();
+    return null;
+  }
+  const photo = await Camera.getPhoto({
+    quality: 82,
+    allowEditing: false,
+    resultType: "dataUrl",
+    source: "CAMERA",
+    saveToGallery: false
+  });
+  lastMealPhoto = photo.dataUrl || photo.webPath || null;
+  return lastMealPhoto;
+}
+
+function healthPlugin() {
+  return capacitorPlugin("CapacitorHealth") || capacitorPlugin("Health") || capacitorPlugin("HealthKit") || capacitorPlugin("CapgoHealth");
+}
+
+async function readNativeHealthData() {
+  const Health = healthPlugin();
+  if (!Health) {
+    return {
+      source: "web-fallback",
+      steps: state.watch.steps,
+      distance: state.watch.distance,
+      activeCalories: state.watch.activeCalories,
+      heartRate: 52,
+      sleepHours: "7 h 28"
+    };
+  }
+
+  const permissions = [
+    "steps",
+    "distance",
+    "activeEnergyBurned",
+    "heartRate",
+    "sleepAnalysis"
+  ];
+
+  if (Health.requestAuthorization) {
+    await Health.requestAuthorization({ read: permissions, write: [] });
+  } else if (Health.requestPermissions) {
+    await Health.requestPermissions({ read: permissions, write: [] });
+  }
+
+  const now = new Date();
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const range = { startDate: start.toISOString(), endDate: now.toISOString() };
+
+  async function tryRead(methods, fallback) {
+    for (const method of methods) {
+      if (typeof Health[method] === "function") {
+        try {
+          return await Health[method](range);
+        } catch {
+          // Try the next compatible method shape.
+        }
+      }
+    }
+    return fallback;
+  }
+
+  const steps = await tryRead(["querySteps", "getSteps", "getStepCount"], { value: state.watch.steps });
+  const calories = await tryRead(["queryActiveEnergyBurned", "getActiveEnergyBurned", "getCalories"], { value: state.watch.activeCalories });
+  const distance = await tryRead(["queryDistance", "getDistance"], { value: state.watch.distance });
+  const heartRate = await tryRead(["queryHeartRate", "getHeartRate"], { value: 52 });
+  const sleep = await tryRead(["querySleepAnalysis", "getSleepAnalysis", "getSleep"], { value: "7 h 28" });
+
+  return {
+    source: "healthkit",
+    steps: Number(steps.value ?? steps.steps ?? steps.count ?? state.watch.steps),
+    activeCalories: Number(calories.value ?? calories.calories ?? state.watch.activeCalories),
+    distance: Number(distance.value ?? distance.distance ?? state.watch.distance),
+    heartRate: Number(heartRate.value ?? heartRate.heartRate ?? 52),
+    sleepHours: sleep.value ?? sleep.duration ?? "7 h 28"
+  };
+}
 
 const userDailyData = {
   hydration: {
@@ -579,6 +670,8 @@ function renderHomeDashboard() {
   setText("homeDigestionStatus", data.digestion.status);
   setText("homeLastMeal", data.digestion.lastMeal);
   setText("homeNextDigestion", data.digestion.nextDigestion);
+  setText("aiWaterValue", `${data.hydration.current.toFixed(1)} L`);
+  setText("aiCaloriesLeft", Math.max(0, data.nutrition.targetCalories - data.nutrition.calories));
 
   document.querySelectorAll("[data-zone]").forEach((zoneButton) => {
     const zone = zoneButton.dataset.zone;
@@ -679,8 +772,10 @@ function renderPlaceTabs() {
   tabs.innerHTML = ["salle", "maison"].map((place) => `<button type="button" class="${state.selectedPlace === place ? "active" : ""}" data-place="${place}">${place === "salle" ? "Exercices en salle" : "Exercices à la maison"}</button>`).join("");
   tabs.querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
     state.selectedPlace = button.dataset.place;
+    state.selectedGroup = "Tous";
     saveState();
     renderPlaceTabs();
+    renderWorkoutTabs();
     renderExercises();
   }));
 }
@@ -718,6 +813,49 @@ function renderExercises() {
     </button>
   `).join("");
   list.querySelectorAll("[data-exercise]").forEach((card) => card.addEventListener("click", () => openExerciseModal(exerciseLibrary.find((exercise) => exercise.id === card.dataset.exercise))));
+}
+
+function renderExercises() {
+  const search = (document.getElementById("exerciseSearch")?.value || "").toLowerCase();
+  const list = document.getElementById("exerciseList");
+  const filtered = exerciseLibrary.filter((exercise) => {
+    const matchPlace = exercise.place === state.selectedPlace;
+    const matchGroup = state.selectedGroup === "Tous" || exercise.group === state.selectedGroup;
+    const haystack = `${exercise.name} ${exercise.primary} ${exercise.secondary} ${exercise.equipment}`.toLowerCase();
+    return matchPlace && matchGroup && haystack.includes(search);
+  });
+  list.innerHTML = filtered.map((exercise) => `
+    <article class="exercise-card premium-exercise" data-exercise="${exercise.id}">
+      <button type="button" class="exercise-open" aria-label="Ouvrir ${exercise.name}">
+        <div class="demo-video muscle-${exercise.group.toLowerCase()}">
+          <span class="mini-head"></span>
+          <span class="mini-body"></span>
+          <span class="mini-limb"></span>
+          <span class="mini-muscle"></span>
+        </div>
+        <div class="exercise-copy">
+          <strong>${exercise.name}</strong>
+          <p>${exercise.place === "salle" ? "Salle" : "Maison"} · ${exercise.level} · ${exercise.primary}</p>
+          <p>${exercise.description}</p>
+          <small>Voir la fiche détaillée</small>
+        </div>
+      </button>
+      <button type="button" class="exercise-start" data-start-exercise="${exercise.id}">Démarrer</button>
+    </article>
+  `).join("");
+  list.querySelectorAll(".exercise-open").forEach((button) => button.addEventListener("click", () => {
+    const card = button.closest("[data-exercise]");
+    openExerciseModal(exerciseLibrary.find((exercise) => exercise.id === card.dataset.exercise));
+  }));
+  list.querySelectorAll("[data-start-exercise]").forEach((button) => button.addEventListener("click", () => {
+    const exercise = exerciseLibrary.find((item) => item.id === button.dataset.startExercise);
+    if (!exercise) return;
+    state.todayWorkout.push({ id: exercise.id, name: exercise.name, sets: exercise.sets, reps: exercise.reps, rest: exercise.rest });
+    saveState();
+    renderDashboard();
+    addMessage(`${exercise.name} ajouté à ton entraînement du jour.`, "ai");
+    haptic();
+  }));
 }
 
 function openExerciseModal(exercise) {
@@ -951,6 +1089,50 @@ function nexusReply(prompt) {
   return "Je peux adapter ton entraînement, estimer un repas, corriger tes macros ou ajuster tes objectifs selon ton poids et tes pas.";
 }
 
+function buildNexusContext() {
+  const data = getHomeDailyData();
+  const todayTasks = state.tasks.map(normalizeTask).filter((task) => task.date === todayISO() || task.repeat === "daily");
+  const nextTask = todayTasks.find((task) => !task.done);
+  const criticalTask = todayTasks.find((task) => task.priority >= 5);
+  return {
+    water: `${data.hydration.current.toFixed(1)} L / ${data.hydration.target} L`,
+    sleepScore: data.sleep.score,
+    snoring: "faible",
+    steps: state.watch.steps,
+    activeCalories: state.watch.activeCalories,
+    trainedMuscles: ["bras", "pectoraux", "épaules"],
+    nutrition: {
+      calories: data.nutrition.calories,
+      target: data.nutrition.targetCalories,
+      protein: data.nutrition.protein,
+      proteinTarget: data.nutrition.proteinTarget
+    },
+    planning: {
+      nextTask: nextTask ? `${nextTask.title} à ${nextTask.time}` : "Aucune tâche restante",
+      criticalTask: criticalTask ? `${criticalTask.title} à ${criticalTask.time}` : "Aucune tâche critique"
+    },
+    native: {
+      capacitor: isNativeApp(),
+      lastMealPhotoAvailable: Boolean(lastMealPhoto)
+    }
+  };
+}
+
+async function askNexusAI(message) {
+  try {
+    const response = await fetch("/api/nexus-ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, context: buildNexusContext(), mealPhoto: lastMealPhoto })
+    });
+    if (!response.ok) throw new Error("Backend Nexus IA indisponible");
+    const data = await response.json();
+    return data.reply || nexusReply(message);
+  } catch {
+    return nexusReply(message);
+  }
+}
+
 function startFocus() {
   const end = document.getElementById("focusEnd").value;
   const selectedApps = Object.entries(state.blockedApps).filter(([, active]) => active).map(([app]) => app);
@@ -1146,10 +1328,10 @@ function setupEvents() {
     addMessage(`Repas ajouté : ${macros.calories} kcal estimées. Tu peux corriger les valeurs si besoin.`, "ai");
   });
 
-  document.getElementById("aiEstimateFood").addEventListener("click", () => {
+  document.getElementById("aiEstimateFood").addEventListener("click", async () => {
     const macros = estimateMacros(document.getElementById("foodText").value || "repas moyen", Number(document.getElementById("foodPortion").value || 1));
     document.getElementById("foodCalories").value = macros.calories;
-    addMessage(`Estimation Nexus IA : ${macros.calories} kcal, P ${macros.protein}g, G ${macros.carbs}g, L ${macros.fat}g.`, "ai");
+    addMessage(await askNexusAI(`Analyse mon repas : ${document.getElementById("foodText").value || "repas moyen"}`), "ai");
   });
 
   document.querySelectorAll("[data-water]").forEach((button) => button.addEventListener("click", () => {
@@ -1202,13 +1384,13 @@ function setupEvents() {
     addMessage(`${name} ajouté depuis l'accueil : ${calories} kcal estimées.`, "ai");
   });
 
-  document.getElementById("homeEstimateMeal")?.addEventListener("click", () => {
+  document.getElementById("homeEstimateMeal")?.addEventListener("click", async () => {
     const mealName = document.getElementById("homeMealName");
     const mealCalories = document.getElementById("homeMealCalories");
     document.getElementById("homeMealForm")?.classList.remove("collapsed");
     if (mealName && !mealName.value) mealName.value = "Saumon, riz, légumes";
     if (mealCalories) mealCalories.value = 520;
-    addMessage("Estimation simulée Nexus IA : saumon, riz et légumes ≈ 520 kcal, 35g protéines, 45g glucides, 18g lipides.", "ai");
+    addMessage(await askNexusAI("Estime les calories de mon repas et propose les macros."), "ai");
     haptic();
   });
 
@@ -1219,6 +1401,17 @@ function setupEvents() {
     document.getElementById("homeMealName").value = `Photo : ${file.name}`;
     document.getElementById("homeMealCalories").value = 520;
     addMessage("Photo reçue. Sans backend IA réel, Nexus prépare une estimation simulée modifiable.", "ai");
+  });
+
+  document.querySelector(".home-file")?.addEventListener("click", async (event) => {
+    if (!isNativeApp()) return;
+    event.preventDefault();
+    const photo = await captureMealPhoto("homeMealPhoto");
+    if (!photo) return;
+    document.getElementById("homeMealForm")?.classList.remove("collapsed");
+    document.getElementById("homeMealName").value = "Photo du repas";
+    document.getElementById("homeMealCalories").value = 520;
+    addMessage(await askNexusAI("Estime les calories de cette photo de repas."), "ai");
   });
 
   document.getElementById("homeRecommendations")?.addEventListener("click", () => {
@@ -1250,24 +1443,29 @@ function setupEvents() {
     addMessage(`Objectifs recalculés : ${state.nutrition.target} kcal, ${state.nutrition.proteinTarget}g protéines, ${state.watch.stepGoal} pas.`, "ai");
   });
 
-  document.querySelectorAll(".watch-actions button").forEach((button) => button.addEventListener("click", () => {
+  document.querySelectorAll(".watch-actions button").forEach((button) => button.addEventListener("click", async () => {
     state.watch.connected = true;
     state.watch.provider = button.dataset.watch;
-    state.watch.steps = Math.max(state.watch.steps, 9200);
-    state.watch.activeCalories = Math.max(state.watch.activeCalories, 480);
+    const health = await readNativeHealthData();
+    state.watch.steps = Math.max(state.watch.steps, health.steps || 9200);
+    state.watch.activeCalories = Math.max(state.watch.activeCalories, health.activeCalories || 480);
+    state.watch.distance = Number(health.distance || state.watch.distance);
     saveState();
     renderWatch();
     renderDashboard();
-    addMessage(`${state.watch.provider} préparé. Dans une vraie app, les données viendront de HealthKit, Google Fit ou l'API officielle.`, "ai");
+    renderHomeDashboard();
+    addMessage(`${state.watch.provider} synchronisé : ${state.watch.steps} pas, ${state.watch.activeCalories} kcal actives. Source : ${health.source}.`, "ai");
   }));
-  document.getElementById("syncSteps").addEventListener("click", () => {
-    state.watch.steps = Number(document.getElementById("manualSteps").value || 0);
+  document.getElementById("syncSteps").addEventListener("click", async () => {
+    const health = isNativeApp() ? await readNativeHealthData() : null;
+    state.watch.steps = health?.steps || Number(document.getElementById("manualSteps").value || 0);
     state.watch.stepGoal = Number(document.getElementById("stepGoal").value || 10000);
-    state.watch.distance = Number((state.watch.steps * 0.00075).toFixed(1));
-    state.watch.activeCalories = Math.round(state.watch.steps * 0.045);
+    state.watch.distance = Number((health?.distance || state.watch.steps * 0.00075).toFixed(1));
+    state.watch.activeCalories = Math.round(health?.activeCalories || state.watch.steps * 0.045);
     saveState();
     renderWatch();
     renderDashboard();
+    renderHomeDashboard();
   });
 
   document.getElementById("addExerciseToWorkout").addEventListener("click", () => {
@@ -1307,20 +1505,43 @@ function setupEvents() {
       updateFocusTimer();
     }
   });
-  document.getElementById("chatForm").addEventListener("submit", (event) => {
+  document.getElementById("chatForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = document.getElementById("chatInput");
     const text = input.value.trim();
     if (!text) return;
     addMessage(text, "user");
-    addMessage(nexusReply(text), "ai");
+    addMessage(await askNexusAI(text), "ai");
     input.value = "";
   });
-  document.querySelectorAll(".quick-actions button").forEach((button) => button.addEventListener("click", () => {
+  document.querySelectorAll(".quick-actions button").forEach((button) => button.addEventListener("click", async () => {
     const prompt = button.dataset.prompt;
     addMessage(prompt, "user");
-    addMessage(nexusReply(prompt), "ai");
+    addMessage(await askNexusAI(prompt), "ai");
   }));
+  document.querySelectorAll(".ai-command-actions [data-prompt]").forEach((button) => button.addEventListener("click", async () => {
+    const prompt = button.dataset.prompt;
+    addMessage(prompt, "user");
+    addMessage(await askNexusAI(prompt), "ai");
+  }));
+  document.getElementById("aiPhotoButton")?.addEventListener("click", async () => {
+    const photo = await captureMealPhoto("aiMealPhoto");
+    if (!photo) return;
+    const preview = document.getElementById("aiMealPreview");
+    preview.src = photo;
+    preview.style.display = "block";
+    addMessage("Photo du plat reçue.", "user");
+    addMessage(await askNexusAI("Estime les calories de cette photo de repas."), "ai");
+  });
+  document.getElementById("aiMealPhoto")?.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const preview = document.getElementById("aiMealPreview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+    addMessage("Photo du plat reçue.", "user");
+    addMessage(await askNexusAI("Estime les calories de cette photo de repas."), "ai");
+  });
   document.getElementById("closeExerciseModal").addEventListener("click", closeExerciseModal);
   document.getElementById("exerciseModal").addEventListener("click", (event) => {
     if (event.target.id === "exerciseModal") closeExerciseModal();

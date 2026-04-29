@@ -638,12 +638,47 @@
           </article>
 
           <article class="screen" id="aiScreen">
-            <div class="section-head">
+            <div class="ai-premium-head">
               <div>
-                <p class="eyebrow">◆ NEXUS AI</p>
-                <h2>Assistant contextuel</h2>
+                <p class="eyebrow">NEXUS OS</p>
+                <h2>Nexus IA</h2>
+                <p>Assistant intelligent • Santé • Fitness • Sommeil • Nutrition</p>
               </div>
-              <div class="ai-avatar"><span></span></div>
+            </div>
+            <section class="nexus-ai-hero" aria-label="Assistant holographique Nexus IA">
+              <div class="nexus-assistant"></div>
+              <div class="nexus-wave">▁▃▅▇▅▃▁ Nexus IA active</div>
+              <div class="nexus-holo-base"></div>
+            </section>
+            <section class="ai-metric-grid" aria-label="Résumé du contexte Nexus IA">
+              <article>
+                <h3>Hydratation</h3>
+                <strong id="aiWaterValue">1.0 L</strong>
+                <span>Objectif 2.5 L</span>
+              </article>
+              <article>
+                <h3>Sommeil</h3>
+                <strong>87/100</strong>
+                <span>Ronflements faibles</span>
+              </article>
+              <article>
+                <h3>Nutrition</h3>
+                <strong id="aiCaloriesLeft">742</strong>
+                <span>kcal restantes</span>
+              </article>
+              <article>
+                <h3>Fitness</h3>
+                <strong>Bras</strong>
+                <span>Très sollicités</span>
+              </article>
+            </section>
+            <div class="ai-command-actions">
+              <button data-prompt="Planifie ma journée avec travail, sport, repas et sommeil">Planifier ma journée</button>
+              <button data-prompt="Crée un entraînement adapté à ma récupération">Créer un entraînement</button>
+              <button type="button" id="aiPhotoButton">Prendre une photo du plat</button>
+              <input id="aiMealPhoto" type="file" accept="image/*" capture="environment" hidden />
+              <button class="secondary" data-prompt="Analyse mon sommeil et mes ronflements">Analyser mon sommeil</button>
+              <img id="aiMealPreview" class="ai-photo-preview" alt="Aperçu du plat" />
             </div>
             <div class="chat-window" id="chatWindow"></div>
             <div class="quick-actions">

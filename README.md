@@ -56,3 +56,18 @@ Le blocage réel d'applications sur iPhone devra passer par les frameworks Apple
 4. Remplacer les démonstrations simulées par des vidéos possédées ou licenciées.
 5. Brancher NEXUS AI sur un backend sécurisé qui appelle Claude ou OpenAI.
 6. Demander l'entitlement Apple Family Controls si le blocage natif devient prioritaire.
+
+## Version iPhone Capacitor
+
+Une base Capacitor est maintenant préparée dans `capacitor.config.json`, `package.json`, `server.js` et `CAPACITOR-IOS.md`.
+
+Commandes principales :
+
+```bash
+npm install
+npx cap add ios
+npx cap sync ios
+npx cap open ios
+```
+
+Dans Xcode, active la capability HealthKit et ajoute les permissions `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, `NSHealthShareUsageDescription` et `NSHealthUpdateUsageDescription`.

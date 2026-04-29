@@ -1,0 +1,26 @@
+{
+  "name": "nexus-os",
+  "version": "0.1.0",
+  "description": "Nexus OS - application iPhone de planification, fitness, nutrition, sommeil et IA.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cap:init": "cap init Nexus com.nexus.app --web-dir=.",
+    "ios:add": "cap add ios",
+    "ios:sync": "cap sync ios",
+    "ios:open": "cap open ios",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@capgo/capacitor-health": "latest",
+    "@capacitor/camera": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "openai": "^4.77.0"
+  }
+}
