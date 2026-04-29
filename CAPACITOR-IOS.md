@@ -1,4 +1,4 @@
-# Nexus OS - Préparation iPhone Capacitor
+# Nexus OS - Préparation iPhone et Android Capacitor
 
 ## Installation
 
@@ -6,7 +6,9 @@
 npm install
 npx cap init Nexus com.nexus.app --web-dir=.
 npx cap add ios
+npx cap add android
 npx cap sync ios
+npx cap sync android
 npx cap open ios
 ```
 
@@ -15,7 +17,9 @@ Si `capacitor.config.json` existe déjà, `cap init` peut être inutile. Lance a
 ```bash
 npm install
 npx cap add ios
+npx cap add android
 npx cap sync ios
+npx cap sync android
 npx cap open ios
 ```
 
@@ -53,3 +57,13 @@ Dans `.env`, choisis :
 - `AI_PROVIDER=openai` avec `OPENAI_API_KEY` pour OpenAI.
 
 Le frontend appelle `/api/nexus-ai`. En local iPhone/simulateur, adapte l’URL du backend si nécessaire.
+
+## Android
+
+Pour Android :
+
+```bash
+npx cap open android
+```
+
+Dans Android Studio, vérifie les permissions micro/caméra si elles sont demandées par les plugins. Le suivi sommeil web utilise le microphone avec `getUserMedia`; pour un suivi en arrière-plan écran verrouillé, il faudra plus tard un plugin natif Android/iOS.

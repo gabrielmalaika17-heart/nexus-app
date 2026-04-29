@@ -672,6 +672,14 @@ function renderHomeDashboard() {
   setText("homeNextDigestion", data.digestion.nextDigestion);
   setText("aiWaterValue", `${data.hydration.current.toFixed(1)} L`);
   setText("aiCaloriesLeft", Math.max(0, data.nutrition.targetCalories - data.nutrition.calories));
+  window.updateBodyMap?.({
+    ...window.bodyState,
+    hydration: {
+      current: data.hydration.current,
+      target: data.hydration.target
+    },
+    stomach: "digesting"
+  });
 
   document.querySelectorAll("[data-zone]").forEach((zoneButton) => {
     const zone = zoneButton.dataset.zone;
@@ -845,12 +853,15 @@ function renderExercises() {
   `).join("");
   list.querySelectorAll(".exercise-open").forEach((button) => button.addEventListener("click", () => {
     const card = button.closest("[data-exercise]");
-    openExerciseModal(exerciseLibrary.find((exercise) => exercise.id === card.dataset.exercise));
+    const exercise = exerciseLibrary.find((item) => item.id === card.dataset.exercise);
+    window.setWorkoutZones?.(exercise?.name);
+    openExerciseModal(exercise);
   }));
   list.querySelectorAll("[data-start-exercise]").forEach((button) => button.addEventListener("click", () => {
     const exercise = exerciseLibrary.find((item) => item.id === button.dataset.startExercise);
     if (!exercise) return;
     state.todayWorkout.push({ id: exercise.id, name: exercise.name, sets: exercise.sets, reps: exercise.reps, rest: exercise.rest });
+    window.setWorkoutZones?.(exercise.name);
     saveState();
     renderDashboard();
     addMessage(`${exercise.name} ajouté à ton entraînement du jour.`, "ai");
@@ -859,7 +870,9 @@ function renderExercises() {
 }
 
 function openExerciseModal(exercise) {
+  if (!exercise) return;
   currentExercise = exercise;
+  window.setWorkoutZones?.(exercise.name);
   document.getElementById("modalExerciseTitle").textContent = exercise.name;
   document.getElementById("modalExerciseMeta").innerHTML = [
     ["Lieu", exercise.place === "salle" ? "Salle" : "Maison"],

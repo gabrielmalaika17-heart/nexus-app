@@ -138,22 +138,40 @@
 
                 <section class="human-stage">
                   <div class="human-date-pill">Mercredi 29 avril 2026</div>
-                  <div class="human-body-dashboard" id="humanBodyDashboard">
-                    <div class="scan-beam"></div>
-                    <button class="body-zone brain" data-zone="brain">Cerveau</button>
-                    <button class="body-zone heart-zone" data-zone="cardio">Coeur</button>
-                    <button class="body-zone lungs" data-zone="lungs">Poumons</button>
-                    <button class="body-zone shoulders" data-zone="shoulders">Épaules</button>
-                    <button class="body-zone arms left" data-zone="arms">Bras</button>
-                    <button class="body-zone arms right" data-zone="arms">Bras</button>
-                    <button class="body-zone chest" data-zone="chest">Pectoraux</button>
-                    <button class="body-zone core" data-zone="core">Core</button>
-                    <button class="body-zone digestion" data-zone="digestion">Digestion</button>
-                    <button class="body-zone legs left" data-zone="legs">Jambes</button>
-                    <button class="body-zone legs right" data-zone="legs">Jambes</button>
-                    <button class="body-zone calves left" data-zone="calves">Mollets</button>
-                    <button class="body-zone calves right" data-zone="calves">Mollets</button>
-                  </div>
+                  <section class="body-card">
+                    <h2>Centre biométrique</h2>
+                    <svg id="bodyMap" viewBox="0 0 300 620" class="body-svg" role="img" aria-label="Corps humain interactif Nexus">
+                      <defs>
+                        <filter id="bodyGlow" x="-30%" y="-30%" width="160%" height="160%">
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      </defs>
+                      <ellipse class="body-base" cx="150" cy="594" rx="86" ry="18" />
+                      <circle id="zone-brain" class="body-zone brain" data-body-zone="brain" cx="150" cy="55" r="28"/>
+                      <path class="body-outline" d="M122 86 Q150 105 178 86 L190 122 L222 136 L244 176 L234 292 Q230 320 208 318 L198 292 L192 500 L176 585 L158 585 L150 388 L142 585 L124 585 L108 500 L102 292 L92 318 Q70 320 66 292 L56 176 L78 136 L110 122 Z"/>
+                      <rect id="zone-shoulders" class="body-zone shoulders" data-body-zone="shoulders" x="80" y="115" width="140" height="34" rx="18"/>
+                      <rect id="zone-chest" class="body-zone chest" data-body-zone="chest" x="105" y="150" width="90" height="75" rx="22"/>
+                      <circle id="zone-cardio" class="body-zone cardio" data-body-zone="cardio" cx="135" cy="180" r="14"/>
+                      <rect id="zone-core" class="body-zone core" data-body-zone="core" x="112" y="225" width="76" height="70" rx="20"/>
+                      <ellipse id="zone-stomach" class="body-zone stomach" data-body-zone="stomach" cx="150" cy="270" rx="35" ry="25"/>
+                      <rect id="zone-arms-left" class="body-zone arms" data-body-zone="arms" x="45" y="150" width="35" height="170" rx="18"/>
+                      <rect id="zone-arms-right" class="body-zone arms" data-body-zone="arms" x="220" y="150" width="35" height="170" rx="18"/>
+                      <rect id="zone-legs-left" class="body-zone legs" data-body-zone="legs" x="105" y="305" width="38" height="190" rx="20"/>
+                      <rect id="zone-legs-right" class="body-zone legs" data-body-zone="legs" x="157" y="305" width="38" height="190" rx="20"/>
+                      <rect id="zone-calves-left" class="body-zone calves" data-body-zone="calves" x="105" y="490" width="34" height="90" rx="18"/>
+                      <rect id="zone-calves-right" class="body-zone calves" data-body-zone="calves" x="161" y="490" width="34" height="90" rx="18"/>
+                    </svg>
+                    <p id="zoneDetails">Clique sur une zone du corps pour voir les détails.</p>
+                    <div class="body-map-actions">
+                      <button type="button" onclick="setWorkoutZones('Développé couché')">Simuler développé couché</button>
+                      <button type="button" onclick="setWorkoutZones('Vélo')">Simuler vélo</button>
+                      <button type="button" onclick="setHydration(1.0, 2.5)">Hydratation : 1 L / 2.5 L</button>
+                    </div>
+                  </section>
                   <div class="zone-detail" id="zoneDetail">Clique sur une zone du corps pour voir les détails.</div>
                   <section class="body-zones-grid" id="bodyZonesGrid"></section>
                 </section>
@@ -600,6 +618,25 @@
               <div><label>Léger</label><span><i style="width: 68%"></i></span><b>4 h 36</b></div>
               <div><label>Éveillé</label><span><i style="width: 12%"></i></span><b>22 min</b></div>
             </div>
+            <section class="sleep-card">
+              <h2>Sommeil réel</h2>
+              <p class="privacy-note">Mesure locale avec microphone. Estimation non médicale. L’audio est analysé localement sur l’appareil.</p>
+              <div class="sleep-live-grid">
+                <div class="sleep-score-live"><strong id="sleepScore">--</strong><span>/100</span></div>
+                <div>
+                  <p id="sleepDurationResult">Durée : --</p>
+                  <p id="snoreResult">Ronflements : non mesurés</p>
+                  <p id="noiseResult">Bruit moyen : --</p>
+                  <p id="sleepPrivacyResult">Cette mesure est une estimation et ne remplace pas un avis médical.</p>
+                </div>
+              </div>
+              <div class="sleep-tracker-actions">
+                <button type="button" onclick="startSleepTracking()">Démarrer suivi du sommeil</button>
+                <button type="button" onclick="stopSleepTracking()">Arrêter suivi</button>
+              </div>
+              <canvas id="sleepChart" width="340" height="120"></canvas>
+              <div class="sleep-session-history" id="sleepSessionHistory"></div>
+            </section>
             <form class="sleep-form" id="sleepForm">
               <label>Coucher <input id="bedTime" type="time" value="23:20" /></label>
               <label>Réveil <input id="wakeTime" type="time" value="06:48" /></label>
@@ -758,6 +795,8 @@
         </nav>
       </section>
     </main>
+    <script src="body-map.js"></script>
+    <script src="sleep-tracker.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

@@ -59,15 +59,18 @@ Le blocage réel d'applications sur iPhone devra passer par les frameworks Apple
 
 ## Version iPhone Capacitor
 
-Une base Capacitor est maintenant préparée dans `capacitor.config.json`, `package.json`, `server.js` et `CAPACITOR-IOS.md`.
+Une base Capacitor iOS/Android est maintenant préparée dans `capacitor.config.json`, `package.json`, `server.js` et `CAPACITOR-IOS.md`.
 
 Commandes principales :
 
 ```bash
 npm install
 npx cap add ios
+npx cap add android
 npx cap sync ios
+npx cap sync android
 npx cap open ios
+npx cap open android
 ```
 
 Dans Xcode, active la capability HealthKit et ajoute les permissions `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, `NSHealthShareUsageDescription` et `NSHealthUpdateUsageDescription`.

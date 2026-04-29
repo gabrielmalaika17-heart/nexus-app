@@ -1,9 +1,11 @@
-const CACHE_NAME = "nexus-pwa-v14";
+const CACHE_NAME = "nexus-pwa-v15";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./body-map.js",
+  "./sleep-tracker.js",
   "./manifest.webmanifest",
   "./offline.html",
   "./assets/nexus-command-center.png",
