@@ -1,1 +1,47 @@
-# nexus-app
+# NEXUS - Prototype planner, fitness, sommeil, focus et IA
+
+Ce dossier contient une première version interactive du projet NEXUS. C'est un prototype web mobile qui permet de valider l'expérience avant de passer à une vraie application iPhone en SwiftUI.
+
+## Ouvrir le prototype sur ton ordinateur
+
+Ouvre `index.html` dans un navigateur.
+
+## Installer sur iPhone
+
+Pour que l'iPhone puisse l'installer comme une app, il faut une URL web. Le fichier local Windows ne peut pas etre ajoute proprement depuis Safari iPhone.
+
+La meilleure option gratuite :
+
+1. Mettre ce dossier sur GitHub.
+2. Activer GitHub Pages.
+3. Ouvrir l'URL GitHub Pages sur l'iPhone avec Safari.
+4. Appuyer sur Partager.
+5. Choisir Ajouter a l'ecran d'accueil.
+
+Ensuite NEXUS s'ouvre comme une app plein ecran. Le mode hors ligne fonctionne apres une premiere ouverture depuis l'URL.
+
+## Ce qui fonctionne déjà
+
+- Navigation en 5 sections : PLANIF, FITNESS, SOMMEIL, BLOQUER, NEXUS AI.
+- Ajout et validation de tâches avec catégories colorées.
+- Progression globale de la journée.
+- Sauvegarde locale dans le navigateur.
+- Installation PWA avec `manifest.webmanifest` et `sw.js`.
+- Tableau fitness avec anneaux, rythme cardiaque animé et exercices de salle.
+- Démonstrations d'exercice simulées, prêtes à être remplacées par de vraies vidéos.
+- Sommeil avec score, phases, historique et saisie coucher/réveil.
+- Focus volontaire avec sélection d'apps, heure de fin, confirmation utilisateur et minuteur.
+- Assistant NEXUS AI simulé avec réponses basées sur le contexte local.
+
+## Limites réalistes iPhone
+
+Le blocage réel d'applications sur iPhone devra passer par les frameworks Apple Screen Time, notamment FamilyControls, ManagedSettings et DeviceActivity. La logique doit rester volontaire : l'utilisateur choisit les apps, approuve la session et garde le contrôle.
+
+## Suite technique recommandée
+
+1. Refaire cette interface en SwiftUI.
+2. Ajouter SwiftData pour les tâches, séances, nuits et sessions focus.
+3. Ajouter HealthKit pour fitness/sommeil.
+4. Remplacer les démonstrations simulées par des vidéos possédées ou licenciées.
+5. Brancher NEXUS AI sur un backend sécurisé qui appelle Claude ou OpenAI.
+6. Demander l'entitlement Apple Family Controls si le blocage natif devient prioritaire.

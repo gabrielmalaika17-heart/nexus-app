@@ -1,0 +1,25 @@
+{
+  "name": "NEXUS - Planner Focus Fitness",
+  "short_name": "NEXUS",
+  "description": "Planner de journee, fitness, sommeil, focus volontaire et assistant IA contextuel.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#080a0d",
+  "background_color": "#080a0d",
+  "icons": [
+    {
+      "src": "assets/nexus-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/nexus-command-center.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

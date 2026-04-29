@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080a0d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NEXUS" />
+    <title>NEXUS - Planner Focus Fitness</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/nexus-command-center.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="phone" aria-label="Prototype mobile NEXUS">
+        <div class="aurora"></div>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">NEXUS OS</p>
+            <h1>Centre de commande</h1>
+          </div>
+          <div class="status-pill">
+            <span class="pulse-dot"></span>
+            <span id="todayLabel">Aujourd'hui</span>
+          </div>
+        </header>
+
+        <section class="hero-panel">
+          <img src="assets/nexus-command-center.png" alt="Interface futuriste NEXUS" />
+          <div class="hero-overlay">
+            <span>Focus actif</span>
+            <strong id="heroScore">76%</strong>
+          </div>
+        </section>
+
+        <section class="content">
+          <article class="screen active" id="planifScreen">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">◈ PLANIF</p>
+                <h2>Agenda du jour</h2>
+              </div>
+              <button class="icon-button" id="quickComplete" title="Valider la prochaine tâche">✓</button>
+            </div>
+            <div class="progress-card">
+              <div class="ring mini" style="--value: 62; --color: #25f3ff">
+                <span id="taskProgressText">62%</span>
+              </div>
+              <div>
+                <strong>Progression globale</strong>
+                <p id="taskSummary">3 tâches terminées sur 5</p>
+              </div>
+            </div>
+            <form class="task-form" id="taskForm">
+              <input id="taskTitle" type="text" placeholder="Nouvelle tâche" required />
+              <select id="taskCategory" aria-label="Catégorie">
+                <option value="fitness">Fitness</option>
+                <option value="travail">Travail</option>
+                <option value="sommeil">Sommeil</option>
+                <option value="focus">Focus</option>
+                <option value="perso">Perso</option>
+              </select>
+              <input id="taskTime" type="time" value="18:00" />
+              <button type="submit">Ajouter</button>
+            </form>
+            <div class="timeline" id="taskList"></div>
+          </article>
+
+          <article class="screen" id="fitnessScreen">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">⚡ FITNESS</p>
+                <h2>Énergie & salle</h2>
+              </div>
+              <select id="workoutSelect" class="compact-select" aria-label="Type d'entraînement">
+                <option>Force</option>
+                <option>Cardio</option>
+                <option>HIIT</option>
+                <option>Full body</option>
+                <option>Mobilité</option>
+              </select>
+            </div>
+            <div class="metric-grid">
+              <div class="ring" style="--value: 72; --color: #a6ff4d"><span>720</span><small>kcal</small></div>
+              <div class="ring" style="--value: 58; --color: #25f3ff"><span>8.4k</span><small>pas</small></div>
+              <div class="ring" style="--value: 66; --color: #ff7a59"><span>1.8L</span><small>eau</small></div>
+            </div>
+            <div class="heart-card">
+              <span class="heart">♥</span>
+              <div>
+                <strong>Fréquence cardiaque</strong>
+                <p><span id="heartRate">78</span> bpm · zone active</p>
+              </div>
+            </div>
+            <div class="week-bar">
+              <span style="--height: 45%"></span>
+              <span style="--height: 70%"></span>
+              <span style="--height: 55%"></span>
+              <span style="--height: 82%"></span>
+              <span style="--height: 62%"></span>
+              <span style="--height: 88%"></span>
+              <span style="--height: 40%"></span>
+            </div>
+            <div class="exercise-list" id="exerciseList"></div>
+          </article>
+
+          <article class="screen" id="sleepScreen">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">◉ SOMMEIL</p>
+                <h2>Récupération</h2>
+              </div>
+              <div class="score-badge">82</div>
+            </div>
+            <div class="sleep-score">
+              <div class="ring large" style="--value: 82; --color: #8efcff"><span>82</span><small>score</small></div>
+              <div>
+                <strong>Nuit solide</strong>
+                <p>7 h 28 · dette estimée : 24 min</p>
+              </div>
+            </div>
+            <div class="phase-list">
+              <div><label>Profond</label><span><i style="width: 32%"></i></span><b>1 h 22</b></div>
+              <div><label>REM</label><span><i style="width: 26%"></i></span><b>1 h 08</b></div>
+              <div><label>Léger</label><span><i style="width: 68%"></i></span><b>4 h 36</b></div>
+              <div><label>Éveillé</label><span><i style="width: 12%"></i></span><b>22 min</b></div>
+            </div>
+            <form class="sleep-form" id="sleepForm">
+              <label>Coucher <input id="bedTime" type="time" value="23:20" /></label>
+              <label>Réveil <input id="wakeTime" type="time" value="06:48" /></label>
+              <button type="submit">Enregistrer</button>
+            </form>
+            <div class="sleep-history" id="sleepHistory"></div>
+          </article>
+
+          <article class="screen" id="blockScreen">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">🛡 BLOQUER</p>
+                <h2>Focus volontaire</h2>
+              </div>
+              <label class="switch">
+                <input id="masterFocus" type="checkbox" />
+                <span></span>
+              </label>
+            </div>
+            <div class="focus-card">
+              <strong id="focusState">Session inactive</strong>
+              <p id="focusTimer">Choisis tes apps, une heure de fin, puis approuve la session.</p>
+              <input id="focusEnd" type="time" value="19:30" />
+              <button id="startFocus">Démarrer focus</button>
+            </div>
+            <div class="app-toggle-list" id="appToggleList"></div>
+            <div class="screen-time-guide">
+              <h3>Guide Temps d'écran iPhone</h3>
+              <ol>
+                <li>Ouvre Réglages, puis Temps d'écran.</li>
+                <li>Active Limites d'app et choisis les réseaux sociaux.</li>
+                <li>Définis la durée, puis confirme avec ton code.</li>
+                <li>Reviens dans NEXUS pour lancer tes sessions focus.</li>
+              </ol>
+            </div>
+          </article>
+
+          <article class="screen" id="aiScreen">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">◆ NEXUS AI</p>
+                <h2>Assistant contextuel</h2>
+              </div>
+              <div class="ai-avatar"><span></span></div>
+            </div>
+            <div class="chat-window" id="chatWindow"></div>
+            <div class="quick-actions">
+              <button data-prompt="Réorganise ma journée">Réorganiser</button>
+              <button data-prompt="Propose une séance de 45 min">Séance 45 min</button>
+              <button data-prompt="Dois-je dormir plus tôt ce soir ?">Sommeil</button>
+            </div>
+            <form class="chat-form" id="chatForm">
+              <input id="chatInput" type="text" placeholder="Parle à NEXUS..." />
+              <button type="submit">Envoyer</button>
+            </form>
+          </article>
+        </section>
+
+        <nav class="tabbar" aria-label="Navigation principale">
+          <button class="active" data-screen="planifScreen"><span>◈</span>Planif</button>
+          <button data-screen="fitnessScreen"><span>⚡</span>Fitness</button>
+          <button data-screen="sleepScreen"><span>◉</span>Sommeil</button>
+          <button data-screen="blockScreen"><span>🛡</span>Bloquer</button>
+          <button data-screen="aiScreen"><span>◆</span>Nexus</button>
+        </nav>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
