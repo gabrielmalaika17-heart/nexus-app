@@ -1,4 +1,4 @@
-const CACHE_NAME = "nexus-pwa-v3";
+const CACHE_NAME = "nexus-pwa-v8";
 const APP_SHELL = [
   "./",
   "./index.html",

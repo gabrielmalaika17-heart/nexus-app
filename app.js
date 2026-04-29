@@ -1,9 +1,59 @@
 const categoryColors = {
-  fitness: "#a6ff4d",
-  travail: "#25f3ff",
-  sommeil: "#b89cff",
+  etudes: "#2a7fff",
+  todo: "#9fb8c8",
+  fitness: "#00e676",
+  velo: "#00f0ff",
+  marche: "#18ffd0",
+  course: "#00e676",
+  priere: "#ffb300",
+  travail: "#7b61ff",
+  repas: "#ff8a00",
+  courses: "#7cff6b",
+  eau: "#72d7ff",
+  sommeil: "#163bff",
+  lecture: "#3f7cff",
+  meditation: "#ff4fd8",
+  rdv: "#ffffff",
+  transport: "#78a6ff",
+  pause: "#8aa0ad",
+  nettoyage: "#00d6b8",
+  projet: "#7b61ff",
+  libre: "#35e8ff",
+  famille: "#ff7ab6",
   focus: "#ffd166",
   perso: "#ff7a59"
+};
+
+const plannerCategories = [
+  ["etudes", "▤", "Études", "Temps d’apprentissage ou révision.", 90],
+  ["todo", "✓", "À faire", "Petites tâches administratives ou personnelles.", 30],
+  ["fitness", "▥", "Salle", "Entraînement musculaire ou fitness.", 75],
+  ["velo", "◇", "Vélo", "Sortie cardio à vélo.", 45],
+  ["marche", "⌁", "Marche", "Marche active ou récupération.", 30],
+  ["course", "↯", "Course", "Course à pied ou fractionné.", 35],
+  ["priere", "✦", "Prière", "Moment spirituel ou recueillement.", 20],
+  ["travail", "▣", "Travail", "Travail, projet ou obligations.", 120],
+  ["repas", "♨", "Cuisine", "Préparer ou prendre un repas.", 45],
+  ["courses", "▱", "Courses", "Achats et provisions.", 60],
+  ["eau", "♢", "Eau", "Hydratation et rappel de boisson.", 5],
+  ["sommeil", "◔", "Sommeil", "Routine nuit et récupération.", 480],
+  ["lecture", "▥", "Lecture", "Lecture, détente ou apprentissage.", 30],
+  ["meditation", "✧", "Méditation", "Respiration, calme ou pleine conscience.", 10],
+  ["rdv", "◎", "RDV", "Rendez-vous important.", 60],
+  ["transport", "⇄", "Transport", "Déplacement ou trajet.", 30],
+  ["pause", "—", "Pause", "Récupération courte.", 15],
+  ["nettoyage", "✣", "Nettoyage", "Rangement et ménage.", 45],
+  ["projet", "⬡", "Projet", "Projet personnel ou création.", 90],
+  ["libre", "○", "Libre", "Temps libre volontaire.", 60],
+  ["famille", "♡", "Famille", "Famille, amis et social.", 60]
+].map(([id, icon, name, description, duration]) => ({ id, icon, name, description, duration, color: categoryColors[id] || "#00f0ff" }));
+
+const priorityMeta = {
+  1: { label: "Faible", icon: "•", color: "#7da2c8" },
+  2: { label: "Normal", icon: "◆", color: "#00f0ff" },
+  3: { label: "Important", icon: "✦", color: "#00e676" },
+  4: { label: "Très important", icon: "▲", color: "#ffb300" },
+  5: { label: "Critique", icon: "⬢", color: "#ff4655" }
 };
 
 const storageKey = "nexus-pwa-state-v2";
@@ -11,11 +61,13 @@ let focusInterval;
 let currentExercise = null;
 
 const defaultTasks = [
-  { id: "t-1", title: "Préparer le plan de cours", category: "travail", time: "09:00", done: true },
-  { id: "t-2", title: "Séance force haut du corps", category: "fitness", time: "12:30", done: false },
-  { id: "t-3", title: "Bloc focus réseaux sociaux", category: "focus", time: "14:00", done: true },
-  { id: "t-4", title: "Révision du cahier des charges", category: "travail", time: "16:15", done: false },
-  { id: "t-5", title: "Routine sommeil sans écran", category: "sommeil", time: "22:30", done: false }
+  { id: "t-1", title: "Prière du matin", category: "priere", date: "", time: "05:00", duration: 20, priority: 3, reminder: 15, repeat: "daily", note: "Commencer la journée calmement.", status: "todo", done: false },
+  { id: "t-2", title: "Marche", category: "marche", date: "", time: "06:00", duration: 30, priority: 2, reminder: 15, repeat: "daily", note: "Cardio léger.", status: "todo", done: false },
+  { id: "t-3", title: "Petit-déjeuner", category: "repas", date: "", time: "07:00", duration: 35, priority: 3, reminder: 5, repeat: "daily", note: "Repas sain.", status: "done", done: true },
+  { id: "t-4", title: "Travail / projet", category: "travail", date: "", time: "08:00", duration: 180, priority: 4, reminder: 30, repeat: "once", note: "Priorité du matin.", status: "todo", done: false },
+  { id: "t-5", title: "Vélo", category: "velo", date: "", time: "17:30", duration: 45, priority: 2, reminder: 15, repeat: "weekly", note: "Cardio extérieur.", status: "todo", done: false },
+  { id: "t-6", title: "Salle / fitness", category: "fitness", date: "", time: "18:30", duration: 75, priority: 3, reminder: 15, repeat: "weekly", note: "Pectoraux & triceps.", status: "todo", done: false },
+  { id: "t-7", title: "Sommeil", category: "sommeil", date: "", time: "22:30", duration: 480, priority: 5, reminder: 30, repeat: "daily", note: "Routine sans écran.", status: "todo", done: false }
 ];
 
 function uid() {
@@ -104,6 +156,7 @@ const programs = [
 const defaultState = {
   tasks: defaultTasks,
   sleep: { bedTime: "23:20", wakeTime: "06:48", score: 82 },
+  plannerView: "today",
   fitnessView: "fitnessDashboardView",
   selectedPlace: "salle",
   selectedGroup: "Tous",
@@ -137,6 +190,7 @@ const defaultState = {
   watch: { connected: false, provider: "", steps: 8400, stepGoal: 10000, activeCalories: 420, distance: 6.2, workouts: 1 },
   blockedApps: { Instagram: true, TikTok: true, X: true, Facebook: true, Snapchat: false, YouTube: false },
   focus: { active: false, end: "19:30", startedAt: null },
+  holoMode: true,
   chat: [{ who: "ai", text: "Je suis branché sur ton agenda, ton sommeil, ton fitness, ta nutrition et ton mode focus. Quelle action veux-tu optimiser maintenant ?" }]
 };
 
@@ -171,6 +225,43 @@ function saveState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function minutesToTime(total) {
+  const h = Math.floor(total / 60) % 24;
+  const m = total % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function timeToMinutes(time = "00:00") {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function normalizeTask(task) {
+  const category = plannerCategories.some((item) => item.id === task.category) ? task.category : task.category === "perso" ? "todo" : task.category || "todo";
+  const cat = plannerCategories.find((item) => item.id === category) || plannerCategories[1];
+  const duration = Number(task.duration || cat.duration || 30);
+  return {
+    id: task.id || uid(),
+    title: task.title || cat.name,
+    category,
+    date: task.date || todayISO(),
+    time: task.time || "09:00",
+    duration,
+    priority: Number(task.priority || 2),
+    reminder: Number(task.reminder ?? 15),
+    repeat: task.repeat || "once",
+    note: task.note || "",
+    status: task.done ? "done" : task.status || "todo",
+    done: Boolean(task.done || task.status === "done")
+  };
+}
+
+state.tasks = state.tasks.map(normalizeTask);
+
 function mealTotals() {
   return state.nutrition.meals.reduce((total, meal) => ({
     calories: total.calories + Number(meal.calories || 0),
@@ -190,11 +281,21 @@ function renderTasks() {
   state.tasks.sort((a, b) => a.time.localeCompare(b.time));
   const taskList = document.getElementById("taskList");
   taskList.innerHTML = "";
+  const iconMap = { fitness: "▥", travail: "▣", sommeil: "◔", focus: "⬡", perso: "◇", repas: "♨", eau: "♢", ia: "✧" };
+  const labelMap = { fitness: "Salle", travail: "Développement", sommeil: "Lecture & détente", focus: "Concentration", perso: "Personnel", repas: "Repas sain", eau: "Hydratation", ia: "Nexus IA" };
   state.tasks.forEach((task) => {
     const item = document.createElement("div");
     item.className = `task-item ${task.done ? "done" : ""}`;
     item.style.setProperty("--task-color", categoryColors[task.category]);
-    item.innerHTML = `<span class="task-color"></span><div><strong>${task.title}</strong><small>${task.time} · ${task.category}</small></div><button title="Changer le statut">${task.done ? "↺" : "✓"}</button>`;
+    item.innerHTML = `
+      <time>${task.time}</time>
+      <span class="task-icon">${iconMap[task.category] || "◇"}</span>
+      <div>
+        <strong>${task.title}</strong>
+        <small>${labelMap[task.category] || task.category}</small>
+      </div>
+      <button title="Changer le statut">${task.done ? "✓" : ""}</button>
+    `;
     item.querySelector("button").addEventListener("click", () => {
       task.done = !task.done;
       saveState();
@@ -208,6 +309,156 @@ function renderTasks() {
   document.querySelector(".ring.mini").style.setProperty("--value", percent);
   document.getElementById("taskSummary").textContent = `${done} tâches terminées sur ${state.tasks.length}`;
   document.getElementById("heroScore").textContent = `${percent}%`;
+  document.getElementById("homeFocus").textContent = `${percent}%`;
+  document.getElementById("homeFocusBar").style.width = `${percent}%`;
+}
+
+function renderTasks() {
+  const taskList = document.getElementById("taskList");
+  taskList.innerHTML = "";
+  state.tasks = state.tasks.map(normalizeTask);
+  const today = todayISO();
+  const todayTasks = state.tasks.filter((task) => task.date === today || task.repeat === "daily").sort((a, b) => {
+    if (state.plannerView === "today") return b.priority - a.priority || a.time.localeCompare(b.time);
+    return a.time.localeCompare(b.time);
+  });
+  document.querySelectorAll("[data-planner-view]").forEach((button) => button.classList.toggle("active", button.dataset.plannerView === state.plannerView));
+  document.getElementById("plannerDateTitle").textContent = state.plannerView === "today" ? "Aujourd'hui" : state.plannerView === "week" ? "Semaine" : "Mois";
+  document.getElementById("plannerDateSubtitle").textContent = new Intl.DateTimeFormat("fr-CA", { weekday: "long", day: "2-digit", month: "long" }).format(new Date());
+  renderWeekStrip();
+  if (state.plannerView === "week") renderWeekView(taskList);
+  else if (state.plannerView === "month") renderMonthView(taskList);
+  else todayTasks.forEach((task) => taskList.appendChild(createTaskElement(task)));
+
+  const done = todayTasks.filter((task) => task.done).length;
+  const percent = todayTasks.length ? Math.round((done / todayTasks.length) * 100) : 0;
+  const next = todayTasks.find((task) => !task.done);
+  const totalBusy = todayTasks.reduce((sum, task) => sum + Number(task.duration || 0), 0);
+  const freeMinutes = Math.max(0, 16 * 60 - totalBusy);
+  const critical = todayTasks.filter((task) => task.priority >= 5);
+  const high = todayTasks.find((task) => task.priority >= 4 && !task.done) || next;
+  document.getElementById("taskProgressText").textContent = `${percent}%`;
+  document.querySelector(".ring.mini").style.setProperty("--value", percent);
+  document.getElementById("taskSummary").textContent = `${done} tâches terminées sur ${todayTasks.length}`;
+  document.getElementById("heroScore").textContent = `${percent}%`;
+  document.getElementById("homeFocus").textContent = `${percent}%`;
+  document.getElementById("homeFocusBar").style.width = `${percent}%`;
+  document.getElementById("nextTaskText").textContent = next ? `${next.title} à ${next.time}` : "Journée terminée";
+  document.getElementById("freeTimeText").textContent = `${Math.floor(freeMinutes / 60)} h ${String(freeMinutes % 60).padStart(2, "0")}`;
+  document.getElementById("dayLoadText").textContent = critical.length > 2 ? "Trop critique" : totalBusy > 9 * 60 ? "Chargée" : "Équilibrée";
+  document.getElementById("priorityInsightText").textContent = high ? `${high.title} (${priorityMeta[high.priority].label})` : "Aucune urgence";
+  document.getElementById("plannerAiSuggestion").textContent = critical.length > 2
+    ? "Tu as trop de tâches critiques aujourd'hui, je te conseille d'en déplacer une."
+    : high ? `Ta tâche la plus importante aujourd'hui est ${high.title} à ${high.time}.` : "Ta journée est claire. Garde de l'espace pour respirer.";
+}
+
+function createTaskElement(task) {
+  const cat = plannerCategories.find((item) => item.id === task.category) || plannerCategories[1];
+  const priority = priorityMeta[task.priority] || priorityMeta[2];
+  const end = minutesToTime(timeToMinutes(task.time) + Number(task.duration || 30));
+  const item = document.createElement("div");
+  item.className = `task-item priority-${task.priority} ${task.done ? "done" : ""}`;
+  item.style.setProperty("--task-color", cat.color);
+  item.style.setProperty("--priority-color", priority.color);
+  item.innerHTML = `
+    <time>${task.time}</time>
+    <span class="task-icon">${cat.icon}</span>
+    <div>
+      <strong>${task.title}</strong>
+      <small>${end} · ${task.duration} min · ${cat.name} · rappel ${task.reminder} min · ${task.repeat}</small>
+      ${task.note ? `<em>${task.note}</em>` : ""}
+    </div>
+    <div class="task-actions">
+      <span class="priority-badge">${priority.icon} ${priority.label}</span>
+      <button data-action="edit" title="Modifier">✎</button>
+      <button data-action="toggle" title="Changer le statut">${task.done ? "✓" : ""}</button>
+      <button data-action="delete" title="Supprimer">×</button>
+    </div>
+  `;
+  item.querySelector('[data-action="edit"]').addEventListener("click", () => {
+    document.getElementById("taskTitle").value = task.title;
+    document.getElementById("taskCategory").value = task.category;
+    document.getElementById("taskDate").value = task.date;
+    document.getElementById("taskTime").value = task.time;
+    document.getElementById("taskDuration").value = task.duration;
+    document.getElementById("taskPriority").value = task.priority;
+    document.getElementById("taskReminder").value = task.reminder;
+    document.getElementById("taskRepeat").value = task.repeat;
+    document.getElementById("taskNote").value = task.note;
+    document.getElementById("taskForm").classList.remove("collapsed");
+    state.tasks = state.tasks.filter((candidate) => candidate.id !== task.id);
+    saveState();
+    renderTasks();
+  });
+  item.querySelector('[data-action="toggle"]').addEventListener("click", () => {
+    task.done = !task.done;
+    task.status = task.done ? "done" : "todo";
+    saveState();
+    renderTasks();
+  });
+  item.querySelector('[data-action="delete"]').addEventListener("click", () => {
+    state.tasks = state.tasks.filter((candidate) => candidate.id !== task.id);
+    saveState();
+    renderTasks();
+  });
+  return item;
+}
+
+function renderWeekStrip() {
+  const week = document.getElementById("weekStrip");
+  const now = new Date();
+  week.innerHTML = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(now);
+    date.setDate(now.getDate() + index);
+    const iso = date.toISOString().slice(0, 10);
+    const count = state.tasks.filter((task) => task.date === iso || task.repeat === "daily").length;
+    return `<span class="${index === 0 ? "active" : ""}"><b>${new Intl.DateTimeFormat("fr-CA", { weekday: "short" }).format(date)}</b><strong>${date.getDate()}</strong><small>${count}</small></span>`;
+  }).join("");
+}
+
+function renderWeekView(container) {
+  const now = new Date();
+  container.innerHTML = "";
+  Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(now);
+    date.setDate(now.getDate() + index);
+    const iso = date.toISOString().slice(0, 10);
+    const dayTasks = state.tasks.filter((task) => task.date === iso || task.repeat === "daily");
+    const block = document.createElement("div");
+    block.className = "calendar-summary-card";
+    block.innerHTML = `<strong>${new Intl.DateTimeFormat("fr-CA", { weekday: "long", day: "2-digit" }).format(date)}</strong><p>${dayTasks.length} tâches · ${dayTasks.filter((task) => task.priority >= 4).length} importantes</p>`;
+    container.appendChild(block);
+  });
+}
+
+function renderMonthView(container) {
+  const now = new Date();
+  const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  container.innerHTML = `<div class="month-grid">${Array.from({ length: days }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth(), index + 1);
+    const iso = date.toISOString().slice(0, 10);
+    const count = state.tasks.filter((task) => task.date === iso || task.repeat === "daily").length;
+    return `<button class="${date.getDate() === now.getDate() ? "active" : ""}"><strong>${index + 1}</strong><small>${count}</small></button>`;
+  }).join("")}</div>`;
+}
+
+function renderPlannerCategories() {
+  const rail = document.getElementById("plannerCategoryRail");
+  rail.innerHTML = plannerCategories.map((cat) => `
+    <button type="button" data-quick-category="${cat.id}" style="--cat-color:${cat.color}">
+      <span>${cat.icon}</span>
+      <strong>${cat.name}</strong>
+      <small>${cat.duration} min</small>
+    </button>
+  `).join("");
+  rail.querySelectorAll("[data-quick-category]").forEach((button) => button.addEventListener("click", () => {
+    const cat = plannerCategories.find((item) => item.id === button.dataset.quickCategory);
+    document.getElementById("taskTitle").value = cat.name;
+    document.getElementById("taskCategory").value = cat.id;
+    document.getElementById("taskDuration").value = cat.duration;
+    document.getElementById("taskPriority").value = cat.id === "sommeil" ? 5 : ["travail", "etudes"].includes(cat.id) ? 4 : ["priere", "eau", "fitness"].includes(cat.id) ? 3 : 2;
+    haptic();
+  }));
 }
 
 function renderFitnessMetrics() {
@@ -218,6 +469,9 @@ function renderFitnessMetrics() {
   document.querySelectorAll(".ring")[1]?.style.setProperty("--value", Math.min(100, Math.round((totals.calories / state.nutrition.target) * 100)));
   document.querySelectorAll(".ring")[2]?.style.setProperty("--value", Math.min(100, Math.round((state.watch.steps / state.watch.stepGoal) * 100)));
   document.querySelectorAll(".ring")[3]?.style.setProperty("--value", Math.min(100, Math.round((state.nutrition.water / state.nutrition.waterTarget) * 100)));
+  document.getElementById("homeCalories").textContent = `${totals.calories}/${state.nutrition.target}`;
+  document.getElementById("homeSteps").textContent = state.watch.steps >= 1000 ? `${(state.watch.steps / 1000).toFixed(1)}k` : state.watch.steps;
+  document.getElementById("homeWater").textContent = `${state.nutrition.water.toFixed(1)} L`;
 }
 
 function renderFitnessViews() {
@@ -463,6 +717,14 @@ function renderWatch() {
   renderFitnessMetrics();
 }
 
+function renderHoloMode() {
+  document.body.classList.toggle("classic-mode", !state.holoMode);
+  document.body.classList.toggle("holo-mode", state.holoMode);
+  const toggle = document.getElementById("holoModeToggle");
+  toggle.textContent = state.holoMode ? "HUD" : "CLASSIC";
+  toggle.setAttribute("aria-pressed", String(state.holoMode));
+}
+
 function renderSleep() {
   document.getElementById("bedTime").value = state.sleep.bedTime;
   document.getElementById("wakeTime").value = state.sleep.wakeTime;
@@ -508,6 +770,14 @@ function renderChat() {
 function nexusReply(prompt) {
   const text = prompt.toLowerCase();
   const totals = mealTotals();
+  const todayTasks = state.tasks.map(normalizeTask).filter((task) => task.date === todayISO() || task.repeat === "daily");
+  const high = todayTasks.sort((a, b) => b.priority - a.priority || a.time.localeCompare(b.time))[0];
+  if (text.includes("planifie") || text.includes("planning") || text.includes("réorganise") || text.includes("reorganise") || text.includes("créneau") || text.includes("creneau")) {
+    if (text.includes("marche")) return "Je te conseille de placer la marche après le travail, car elle est moins urgente et aide à récupérer avant la soirée.";
+    if (text.includes("vélo") || text.includes("velo")) return "Le meilleur créneau vélo est samedi matin ou aujourd'hui vers 17:30 si ton travail est terminé.";
+    if (high) return `Ta tâche la plus importante aujourd'hui est ${high.title} à ${high.time}. Je garderais les tâches critiques tôt et je déplacerais une tâche faible si la journée est trop chargée.`;
+    return "Je peux créer une journée équilibrée avec travail, sport, repas, prière et repos.";
+  }
   if (text.includes("photo") || text.includes("repas") || text.includes("calorie")) return `Je peux estimer ton repas, puis tu peux corriger les valeurs. Aujourd'hui : ${totals.calories}/${state.nutrition.target} kcal, protéines ${totals.protein}/${state.nutrition.proteinTarget}g.`;
   if (text.includes("maison") || text.includes("remplace")) return "Alternative maison : pompes classiques, pompes inclinées, pompes déclinées, pompes avec sac à dos ou développé au sol avec haltères.";
   if (text.includes("séance") || text.includes("seance")) return `Je te propose ${state.profile.frequency || 3} séances/semaine avec ${state.selectedPlace === "maison" ? "pompes, fentes, gainage et pont fessier" : "presse, rowing, développé couché et tirage vertical"}.`;
@@ -560,12 +830,83 @@ function setupEvents() {
     document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active"));
     button.classList.add("active");
     document.getElementById(button.dataset.screen).classList.add("active");
+    haptic();
+  }));
+
+  document.getElementById("holoModeToggle").addEventListener("click", () => {
+    state.holoMode = !state.holoMode;
+    saveState();
+    renderHoloMode();
+    haptic();
+  });
+
+  document.getElementById("nexusCore").addEventListener("click", () => {
+    state.fitnessView = "fitnessDashboardView";
+    saveState();
+    document.querySelectorAll(".tabbar button").forEach((tab) => tab.classList.remove("active"));
+    document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active"));
+    document.querySelector('[data-screen="aiScreen"]').classList.add("active");
+    document.getElementById("aiScreen").classList.add("active");
+    addMessage("Analyse rapide : je surveille tes calories, tes pas, ton eau et ton focus. Tu peux me demander un entraînement, un repas ou un planning.", "ai");
+    haptic();
+  });
+
+  document.querySelectorAll("[data-screen-jump]").forEach((button) => button.addEventListener("click", () => {
+    const target = button.dataset.screenJump;
+    document.querySelectorAll(".tabbar button").forEach((tab) => tab.classList.remove("active"));
+    document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active"));
+    document.querySelector(`[data-screen="${target}"]`)?.classList.add("active");
+    document.getElementById(target).classList.add("active");
+    if (button.dataset.fitnessJump) {
+      state.fitnessView = button.dataset.fitnessJump;
+      saveState();
+      renderFitnessViews();
+    }
+    haptic();
   }));
 
   document.querySelectorAll(".fitness-tabs button").forEach((button) => button.addEventListener("click", () => {
     state.fitnessView = button.dataset.fitnessView;
     saveState();
     renderFitnessViews();
+    haptic();
+  }));
+
+  document.querySelectorAll("[data-planner-view]").forEach((button) => button.addEventListener("click", () => {
+    state.plannerView = button.dataset.plannerView;
+    saveState();
+    renderTasks();
+    haptic();
+  }));
+
+  document.getElementById("openTaskPanel").addEventListener("click", () => {
+    document.getElementById("taskForm").classList.remove("collapsed");
+    haptic();
+  });
+
+  document.getElementById("closeTaskPanel").addEventListener("click", () => {
+    document.getElementById("taskForm").classList.add("collapsed");
+    haptic();
+  });
+
+  document.querySelectorAll("[data-ai-plan]").forEach((button) => button.addEventListener("click", () => {
+    if (button.dataset.aiPlan === "balanced") {
+      state.tasks = [
+        { title: "Prière du matin", category: "priere", time: "05:00", duration: 20, priority: 3, reminder: 15, repeat: "daily", note: "Commencer calmement." },
+        { title: "Marche", category: "marche", time: "06:00", duration: 30, priority: 2, reminder: 15, repeat: "daily", note: "Activer le corps." },
+        { title: "Travail profond", category: "travail", time: "08:00", duration: 180, priority: 4, reminder: 30, repeat: "once", note: "Priorité principale." },
+        { title: "Repas", category: "repas", time: "12:00", duration: 45, priority: 3, reminder: 5, repeat: "daily", note: "Manger propre." },
+        { title: "Vélo", category: "velo", time: "17:30", duration: 45, priority: 2, reminder: 15, repeat: "weekly", note: "Cardio." },
+        { title: "Salle / fitness", category: "fitness", time: "18:30", duration: 75, priority: 3, reminder: 15, repeat: "weekly", note: "Pectoraux & triceps." },
+        { title: "Sommeil", category: "sommeil", time: "22:30", duration: 480, priority: 5, reminder: 30, repeat: "daily", note: "Récupération critique." }
+      ].map((task) => normalizeTask({ ...task, id: uid(), date: todayISO(), done: false, status: "todo" }));
+      addMessage("J'ai créé une journée équilibrée avec prière, marche, travail, repas, vélo, salle et sommeil.", "ai");
+    } else {
+      state.tasks = state.tasks.map(normalizeTask).sort((a, b) => b.priority - a.priority || a.time.localeCompare(b.time));
+      addMessage("J'ai réorganisé les tâches : les priorités critiques et très importantes remontent en haut.", "ai");
+    }
+    saveState();
+    renderTasks();
   }));
 
   document.querySelectorAll(".modal-tabs button").forEach((button) => button.addEventListener("click", () => {
@@ -573,14 +914,30 @@ function setupEvents() {
     document.querySelectorAll(".modal-panel").forEach((panel) => panel.classList.remove("active"));
     button.classList.add("active");
     document.getElementById(button.dataset.modalTab).classList.add("active");
+    haptic();
   }));
 
   document.getElementById("exerciseSearch").addEventListener("input", renderExercises);
   document.getElementById("taskForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const title = document.getElementById("taskTitle");
-    state.tasks.push({ id: uid(), title: title.value.trim(), category: document.getElementById("taskCategory").value, time: document.getElementById("taskTime").value, done: false });
+    state.tasks.push(normalizeTask({
+      id: uid(),
+      title: title.value.trim(),
+      category: document.getElementById("taskCategory").value,
+      date: document.getElementById("taskDate").value || todayISO(),
+      time: document.getElementById("taskTime").value,
+      duration: Number(document.getElementById("taskDuration").value || 30),
+      priority: Number(document.getElementById("taskPriority").value || 2),
+      reminder: Number(document.getElementById("taskReminder").value || 0),
+      repeat: document.getElementById("taskRepeat").value,
+      note: document.getElementById("taskNote").value,
+      status: "todo",
+      done: false
+    }));
     title.value = "";
+    document.getElementById("taskNote").value = "";
+    document.getElementById("taskForm").classList.add("collapsed");
     saveState();
     renderTasks();
   });
@@ -731,6 +1088,10 @@ function setupEvents() {
   });
 }
 
+function haptic() {
+  if (navigator.vibrate) navigator.vibrate(12);
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.register("./sw.js").catch(() => console.info("Service worker non disponible sur cette origine."));
@@ -739,12 +1100,16 @@ function registerServiceWorker() {
 setInterval(() => {
   const rate = 76 + Math.round(Math.sin(Date.now() / 900) * 5);
   document.getElementById("heartRate").textContent = rate;
+  document.getElementById("homeHeart").textContent = `${rate} bpm`;
 }, 900);
 
 calculateCalorieTarget();
 setToday();
+document.getElementById("taskDate").value = todayISO();
 setupEvents();
+renderHoloMode();
 renderTasks();
+renderPlannerCategories();
 renderFitnessViews();
 renderPlaceTabs();
 renderWorkoutTabs();

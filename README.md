@@ -23,6 +23,12 @@ Ensuite NEXUS s'ouvre comme une app plein ecran. Le mode hors ligne fonctionne a
 ## Ce qui fonctionne déjà
 
 - Navigation en 5 sections : PLANIF, FITNESS, SOMMEIL, BLOQUER, NEXUS AI.
+- Mode visuel holographique HUD avec switch classique/holographique.
+- Tableau de bord central Nexus avec noyau IA, anneaux radar et modules flottants.
+- Direction artistique rapprochée du design premium fourni : fond noir/bleu profond, cyan néon, violet, vert énergie, cartes glass et navigation basse HUD.
+- Écran Home rapproché de la nouvelle référence : focus actif, statut système, accès rapide 2x4 et agenda du jour premium.
+- Planification intelligente : catégories rapides, vues jour/semaine/mois, tâches détaillées, rappels, répétitions, priorités 1-5, édition, suppression et suggestions Nexus IA.
+- Panneau premium d'ajout/modification de tâche inspiré des maquettes fournies.
 - Ajout et validation de tâches avec catégories colorées.
 - Progression globale de la journée.
 - Sauvegarde locale dans le navigateur.

@@ -21,9 +21,12 @@
             <p class="eyebrow">NEXUS OS</p>
             <h1>Centre de commande</h1>
           </div>
-          <div class="status-pill">
-            <span class="pulse-dot"></span>
-            <span id="todayLabel">Aujourd'hui</span>
+          <div class="top-actions">
+            <button class="mode-switch" id="holoModeToggle" type="button" aria-pressed="true">HUD</button>
+            <div class="status-pill">
+              <span class="pulse-dot"></span>
+              <span id="todayLabel">Aujourd'hui</span>
+            </div>
           </div>
         </header>
 
@@ -44,6 +47,53 @@
               </div>
               <button class="icon-button" id="quickComplete" title="Valider la prochaine tâche">✓</button>
             </div>
+            <section class="holo-dashboard" aria-label="Tableau de bord holographique">
+              <div class="holo-core" id="nexusCore">
+                <span class="core-ring ring-one"></span>
+                <span class="core-ring ring-two"></span>
+                <span class="core-ring ring-three"></span>
+                <strong>NEXUS</strong>
+                <small>IA active</small>
+              </div>
+              <div class="focus-panel">
+                <span>Focus actif</span>
+                <strong id="homeFocus">40%</strong>
+                <i><b id="homeFocusBar"></b></i>
+                <em>Excellente progression !</em>
+              </div>
+              <div class="system-panel">
+                <span>Statut système</span>
+                <p>⚡ Énergie <strong>78%</strong></p>
+                <p>🔥 Motivation <strong>65%</strong></p>
+                <p>〽 Productivité <strong>82%</strong></p>
+              </div>
+              <div class="hud-node node-calories">
+                <span>Calories</span>
+                <strong id="homeCalories">0</strong>
+              </div>
+              <div class="hud-node node-steps">
+                <span>Pas</span>
+                <strong id="homeSteps">0</strong>
+              </div>
+              <div class="hud-node node-water">
+                <span>Eau</span>
+                <strong id="homeWater">0 L</strong>
+              </div>
+              <div class="hud-node node-heart">
+                <span>Coeur</span>
+                <strong id="homeHeart">78 bpm</strong>
+              </div>
+            </section>
+            <section class="quick-grid" aria-label="Accès rapide">
+              <button data-screen-jump="planifScreen" class="quick-card blue"><span>▤</span><strong>Études</strong><small>5 tâches</small></button>
+              <button data-screen-jump="fitnessScreen" class="quick-card green"><span>▥</span><strong>Salle</strong><small>Entraînement</small></button>
+              <button data-screen-jump="fitnessScreen" data-fitness-jump="nutritionView" class="quick-card amber"><span>♨</span><strong>Cuisiner</strong><small>Repas</small></button>
+              <button data-screen-jump="planifScreen" class="quick-card violet"><span>▣</span><strong>Travail</strong><small>3 projets</small></button>
+              <button data-screen-jump="sleepScreen" class="quick-card blue"><span>◔</span><strong>Sommeil</strong><small>7h 15m</small></button>
+              <button data-screen-jump="fitnessScreen" data-fitness-jump="nutritionView" class="quick-card cyan"><span>♢</span><strong>Hydratation</strong><small>1.5 L / 2.5 L</small></button>
+              <button data-screen-jump="aiScreen" class="quick-card pink"><span>✧</span><strong>Méditation</strong><small>10 min</small></button>
+              <button data-screen-jump="planifScreen" class="quick-card green"><span>▱</span><strong>Courses</strong><small>À faire</small></button>
+            </section>
             <div class="progress-card">
               <div class="ring mini" style="--value: 62; --color: #25f3ff">
                 <span id="taskProgressText">62%</span>
@@ -53,19 +103,92 @@
                 <p id="taskSummary">3 tâches terminées sur 5</p>
               </div>
             </div>
-            <form class="task-form" id="taskForm">
+            <section class="planner-dashboard">
+              <article><span>Prochaine tâche</span><strong id="nextTaskText">Vélo à 17:30</strong></article>
+              <article><span>Temps libre</span><strong id="freeTimeText">2 h 15</strong></article>
+              <article><span>Charge</span><strong id="dayLoadText">Équilibrée</strong></article>
+              <article><span>Priorité IA</span><strong id="priorityInsightText">Études</strong></article>
+            </section>
+            <section class="planner-ai-card">
+              <strong>Planifier avec Nexus IA</strong>
+              <p id="plannerAiSuggestion">Je peux équilibrer travail, sport, prière, repas, repos et temps libre.</p>
+              <div class="planner-ai-actions">
+                <button type="button" data-ai-plan="balanced">Journée équilibrée</button>
+                <button type="button" data-ai-plan="reorganize">Réorganiser</button>
+              </div>
+            </section>
+            <section class="category-rail" id="plannerCategoryRail" aria-label="Catégories rapides"></section>
+            <div class="agenda-card">
+              <div class="agenda-head">
+                <div>
+                  <h3 id="plannerDateTitle">Aujourd'hui</h3>
+                  <p id="plannerDateSubtitle">Vue quotidienne intelligente</p>
+                </div>
+                <div class="planner-view-tabs">
+                  <button class="active" type="button" data-planner-view="today">Jour</button>
+                  <button type="button" data-planner-view="week">Semaine</button>
+                  <button type="button" data-planner-view="month">Mois</button>
+                </div>
+              </div>
+              <div class="week-strip" id="weekStrip"></div>
+              <div class="timeline" id="taskList"></div>
+            </div>
+            <button class="open-task-panel" id="openTaskPanel" type="button">+ Ajouter une tâche</button>
+            <form class="task-form task-panel collapsed" id="taskForm">
+              <div class="task-panel-head">
+                <button type="button" id="closeTaskPanel">×</button>
+                <strong>Ajouter une tâche</strong>
+                <span></span>
+              </div>
               <input id="taskTitle" type="text" placeholder="Nouvelle tâche" required />
               <select id="taskCategory" aria-label="Catégorie">
-                <option value="fitness">Fitness</option>
+                <option value="etudes">Études</option>
+                <option value="todo">Tâche à faire</option>
+                <option value="fitness">Salle / entraînement</option>
+                <option value="velo">Vélo</option>
+                <option value="marche">Marche</option>
+                <option value="course">Course à pied</option>
+                <option value="priere">Prière</option>
                 <option value="travail">Travail</option>
+                <option value="repas">Cuisine / repas</option>
+                <option value="courses">Courses</option>
+                <option value="eau">Hydratation</option>
                 <option value="sommeil">Sommeil</option>
-                <option value="focus">Focus</option>
-                <option value="perso">Perso</option>
+                <option value="lecture">Lecture</option>
+                <option value="meditation">Méditation</option>
+                <option value="rdv">Rendez-vous</option>
+                <option value="transport">Transport</option>
+                <option value="pause">Pause</option>
+                <option value="nettoyage">Nettoyage</option>
+                <option value="projet">Projet personnel</option>
+                <option value="libre">Temps libre</option>
+                <option value="famille">Famille / amis</option>
               </select>
+              <input id="taskDate" type="date" />
               <input id="taskTime" type="time" value="18:00" />
-              <button type="submit">Ajouter</button>
+              <input id="taskDuration" type="number" min="5" step="5" value="45" placeholder="Durée min" />
+              <select id="taskPriority" aria-label="Importance">
+                <option value="1">Faible</option>
+                <option value="2" selected>Normal</option>
+                <option value="3">Important</option>
+                <option value="4">Très important</option>
+                <option value="5">Critique</option>
+              </select>
+              <select id="taskReminder" aria-label="Rappel">
+                <option value="0">Aucun rappel</option>
+                <option value="5">5 min avant</option>
+                <option value="15" selected>15 min avant</option>
+                <option value="30">30 min avant</option>
+                <option value="60">1 h avant</option>
+              </select>
+              <select id="taskRepeat" aria-label="Répétition">
+                <option value="once">Une fois</option>
+                <option value="daily">Quotidien</option>
+                <option value="weekly">Hebdomadaire</option>
+              </select>
+              <input id="taskNote" type="text" placeholder="Note personnelle" />
+              <button type="submit">+ Ajouter une tâche</button>
             </form>
-            <div class="timeline" id="taskList"></div>
           </article>
 
           <article class="screen" id="fitnessScreen">
@@ -97,6 +220,13 @@
               </div>
             </div>
             <div class="fitness-view active" id="fitnessDashboardView">
+              <section class="ai-orb-card">
+                <div class="ai-orb"><span></span></div>
+                <div>
+                  <strong>Nexus analyse ta forme</strong>
+                  <p>Calories, eau, pas, fréquence cardiaque et entraînement du jour sont suivis en temps réel.</p>
+                </div>
+              </section>
               <div class="fitness-card-grid">
                 <article class="mini-stat-card">
                   <span>🔥</span>
