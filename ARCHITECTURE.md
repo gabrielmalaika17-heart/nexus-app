@@ -46,6 +46,10 @@ Aucune IA ne peut garantir seule :
 - Ajouter HealthKit pour pas, calories, fréquence cardiaque et sommeil.
 - Ajouter les vidéos réelles d'exercices.
 - Créer des programmes salle simples : Force, Cardio, HIIT, Full body.
+- Ajouter l'analyse photo des repas via une API IA capable d'estimer les calories.
+- Connecter Apple Watch via HealthKit, et Fitbit/Garmin via leurs API officielles si nécessaire.
+- Transformer la simulation actuelle de smartwatch en connecteurs réels : Apple Health/HealthKit côté iPhone natif, Google Fit/Fitbit/Garmin/Samsung via OAuth et API serveur.
+- Remplacer les animations CSS d'exercices par des vidéos licenciées ou produites par le projet.
 
 ### Phase 3 - IA contextuelle
 

@@ -28,7 +28,12 @@ Ensuite NEXUS s'ouvre comme une app plein ecran. Le mode hors ligne fonctionne a
 - Sauvegarde locale dans le navigateur.
 - Installation PWA avec `manifest.webmanifest` et `sw.js`.
 - Tableau fitness avec anneaux, rythme cardiaque animé et exercices de salle.
-- Démonstrations d'exercice simulées, prêtes à être remplacées par de vraies vidéos.
+- Fiches d'exercices détaillées en français avec visuel animé, onglets, instructions, historique, graphiques et records.
+- Bibliothèque salle et maison, programmes prêts à utiliser, ajout à l'entraînement du jour et notation de performance.
+- Suivi nutrition type MacroFactor : calories, protéines, glucides, lipides, fibres, portions, photo de repas préparée pour IA et correction manuelle.
+- Profil complet : poids, poids cible, taille, âge, sexe, activité, fréquence, objectif, délai et rythme.
+- Tableau de bord progression : poids, calories restantes, eau, pas, messages d'ajustement.
+- Préparation smartwatch : Apple Watch, Fitbit et Garmin côté interface, avec intégration réelle à faire via HealthKit/API plus tard.
 - Sommeil avec score, phases, historique et saisie coucher/réveil.
 - Focus volontaire avec sélection d'apps, heure de fin, confirmation utilisateur et minuteur.
 - Assistant NEXUS AI simulé avec réponses basées sur le contexte local.

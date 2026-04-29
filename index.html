@@ -74,18 +74,20 @@
                 <p class="eyebrow">⚡ FITNESS</p>
                 <h2>Énergie & salle</h2>
               </div>
-              <select id="workoutSelect" class="compact-select" aria-label="Type d'entraînement">
-                <option>Force</option>
-                <option>Cardio</option>
-                <option>HIIT</option>
-                <option>Full body</option>
-                <option>Mobilité</option>
-              </select>
+              <div class="workout-count" id="workoutCount">3 exos</div>
+            </div>
+            <div class="fitness-tabs fitness-tabs-wide" id="fitnessTabs" aria-label="Sections fitness">
+              <button class="active" data-fitness-view="fitnessDashboardView">Tableau</button>
+              <button data-fitness-view="exercisesView">Exos</button>
+              <button data-fitness-view="programsView">Programmes</button>
+              <button data-fitness-view="nutritionView">Nutrition</button>
+              <button data-fitness-view="profileView">Profil</button>
+              <button data-fitness-view="watchView">Santé</button>
             </div>
             <div class="metric-grid">
-              <div class="ring" style="--value: 72; --color: #a6ff4d"><span>720</span><small>kcal</small></div>
-              <div class="ring" style="--value: 58; --color: #25f3ff"><span>8.4k</span><small>pas</small></div>
-              <div class="ring" style="--value: 66; --color: #ff7a59"><span>1.8L</span><small>eau</small></div>
+              <div class="ring" style="--value: 72; --color: #a6ff4d"><span id="calorieRing">720</span><small>kcal</small></div>
+              <div class="ring" style="--value: 58; --color: #25f3ff"><span id="stepRing">8.4k</span><small>pas</small></div>
+              <div class="ring" style="--value: 66; --color: #ff7a59"><span id="waterRing">1.8L</span><small>eau</small></div>
             </div>
             <div class="heart-card">
               <span class="heart">♥</span>
@@ -94,16 +96,186 @@
                 <p><span id="heartRate">78</span> bpm · zone active</p>
               </div>
             </div>
-            <div class="week-bar">
-              <span style="--height: 45%"></span>
-              <span style="--height: 70%"></span>
-              <span style="--height: 55%"></span>
-              <span style="--height: 82%"></span>
-              <span style="--height: 62%"></span>
-              <span style="--height: 88%"></span>
-              <span style="--height: 40%"></span>
+            <div class="fitness-view active" id="fitnessDashboardView">
+              <div class="fitness-card-grid">
+                <article class="mini-stat-card">
+                  <span>🔥</span>
+                  <strong id="dashCalories">0 kcal</strong>
+                  <p>restantes aujourd'hui</p>
+                </article>
+                <article class="mini-stat-card">
+                  <span>💧</span>
+                  <strong id="dashWater">0 L</strong>
+                  <p>sur objectif eau</p>
+                </article>
+                <article class="mini-stat-card">
+                  <span>👣</span>
+                  <strong id="dashSteps">0</strong>
+                  <p>pas aujourd'hui</p>
+                </article>
+                <article class="mini-stat-card">
+                  <span>⚖</span>
+                  <strong id="dashWeight">0 kg</strong>
+                  <p>poids actuel</p>
+                </article>
+              </div>
+              <div class="target-card">
+                <strong id="fitnessInsight">Tu es sur la bonne voie</strong>
+                <p id="fitnessInsightDetails">Nexus ajuste les recommandations avec tes calories, ton activité et ton poids.</p>
+              </div>
+              <div class="week-bar">
+                <span style="--height: 45%"></span>
+                <span style="--height: 70%"></span>
+                <span style="--height: 55%"></span>
+                <span style="--height: 82%"></span>
+                <span style="--height: 62%"></span>
+                <span style="--height: 88%"></span>
+                <span style="--height: 40%"></span>
+              </div>
+              <div class="program-list compact" id="todayWorkoutList"></div>
             </div>
-            <div class="exercise-list" id="exerciseList"></div>
+            <div class="fitness-view" id="exercisesView">
+              <div class="exercise-filters">
+                <div class="workout-tabs" id="placeTabs" aria-label="Lieu d'entraînement"></div>
+                <div class="workout-tabs" id="workoutTabs" aria-label="Groupes d'exercices"></div>
+                <input id="exerciseSearch" type="search" placeholder="Rechercher un exercice, muscle, matériel..." />
+              </div>
+              <div class="exercise-list" id="exerciseList"></div>
+            </div>
+            <div class="fitness-view" id="programsView">
+              <div class="workout-tabs" id="programGoalTabs" aria-label="Objectifs programmes"></div>
+              <div class="program-list" id="programList"></div>
+              <form class="program-form" id="customProgramForm">
+                <h3>Créer mon programme</h3>
+                <input id="customProgramName" type="text" placeholder="Nom du programme" required />
+                <select id="customProgramLevel">
+                  <option>Débutant</option>
+                  <option>Intermédiaire</option>
+                  <option>Avancé</option>
+                </select>
+                <button type="submit">Créer</button>
+              </form>
+            </div>
+            <div class="fitness-view" id="nutritionView">
+              <div class="nutrition-total-grid">
+                <div><strong id="nutritionCalories">0</strong><span>kcal prises</span></div>
+                <div><strong id="nutritionRemaining">0</strong><span>restantes</span></div>
+                <div><strong id="nutritionProtein">0g</strong><span>protéines</span></div>
+                <div><strong id="nutritionCarbs">0g</strong><span>glucides</span></div>
+                <div><strong id="nutritionFat">0g</strong><span>lipides</span></div>
+                <div><strong id="nutritionFiber">0g</strong><span>fibres</span></div>
+              </div>
+              <form class="nutrition-form" id="nutritionForm">
+                <label>Repas mangé
+                  <input id="foodText" type="text" placeholder="ex : riz poulet avocat" />
+                </label>
+                <label>Calories estimées
+                  <input id="foodCalories" type="number" min="0" placeholder="ex : 650" />
+                </label>
+                <label>Portion
+                  <input id="foodPortion" type="number" min="0.25" step="0.25" value="1" />
+                </label>
+                <label class="photo-input">Photo du repas
+                  <input id="foodPhoto" type="file" accept="image/*" />
+                </label>
+                <button type="submit">Ajouter calories</button>
+              </form>
+              <div class="nutrition-actions water-actions">
+                <button id="aiEstimateFood">Estimer avec NEXUS AI</button>
+                <button data-water="0.25">+ 250 ml</button>
+                <button data-water="0.5">+ 500 ml</button>
+                <button data-water="0.75">+ 750 ml</button>
+                <button data-water="1">+ 1 L</button>
+              </div>
+              <div class="nutrition-summary">
+                <strong id="calorieTargetText">Objectif : 2400 kcal</strong>
+                <p id="calorieSummary">720 kcal consommées aujourd'hui.</p>
+                <div class="macro-line"><span style="width: 30%"></span></div>
+                <p id="waterSummary">Hydratation : 1,8 L / 2,7 L</p>
+              </div>
+              <div class="meal-list" id="mealList"></div>
+            </div>
+            <div class="fitness-view" id="profileView">
+              <form class="profile-form" id="profileForm">
+                <label>Poids (kg)<input id="profileWeight" type="number" min="30" max="250" /></label>
+                <label>Poids cible (kg)<input id="profileTargetWeight" type="number" min="30" max="250" /></label>
+                <label>Taille (cm)<input id="profileHeight" type="number" min="120" max="230" /></label>
+                <label>Âge<input id="profileAge" type="number" min="12" max="100" /></label>
+                <label>Sexe
+                  <select id="profileSex">
+                    <option value="homme">Homme</option>
+                    <option value="femme">Femme</option>
+                    <option value="autre">Autre / non précisé</option>
+                  </select>
+                </label>
+                <label>Objectif
+                  <select id="profileGoal">
+                    <option value="perdre">Perdre du poids</option>
+                    <option value="maintenir">Maintenir</option>
+                    <option value="prendre">Prendre du muscle</option>
+                    <option value="cardio">Améliorer mon cardio</option>
+                    <option value="actif">Être plus actif</option>
+                    <option value="composition">Améliorer ma composition corporelle</option>
+                  </select>
+                </label>
+                <label>Délai (semaines)<input id="profileWeeks" type="number" min="2" max="52" /></label>
+                <label>Rythme souhaité
+                  <select id="profilePace">
+                    <option value="lent">Lent</option>
+                    <option value="modere">Modéré</option>
+                    <option value="agressif">Agressif</option>
+                  </select>
+                </label>
+                <label>Niveau d'activité
+                  <select id="profileActivity">
+                    <option value="faible">Peu actif</option>
+                    <option value="moyen">Actif</option>
+                    <option value="haut">Très actif</option>
+                  </select>
+                </label>
+                <label>Entraînements / semaine<input id="profileFrequency" type="number" min="0" max="7" /></label>
+                <button type="submit">Calculer ma cible</button>
+              </form>
+              <div class="target-card">
+                <strong id="targetCalories">Cible : 2400 kcal / jour</strong>
+                <p id="targetDetails">Ajustée selon ton poids, ta taille, ton objectif et ton niveau d'activité.</p>
+              </div>
+              <div class="weight-dashboard">
+                <div><span>Poids actuel</span><strong id="weightCurrent">78 kg</strong></div>
+                <div><span>Poids cible</span><strong id="weightTarget">75 kg</strong></div>
+                <div><span>Moyenne semaine</span><strong id="weeklyAverage">77,8 kg</strong></div>
+                <div><span>Pas moyens</span><strong id="averageSteps">8400</strong></div>
+              </div>
+              <div class="modal-chart weight-chart" id="weightChart"><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="fitness-view" id="watchView">
+              <div class="watch-card">
+                <div class="watch-orbit"><span></span></div>
+                <div>
+                  <strong id="watchState">Smartwatch non connectée</strong>
+                  <p id="watchDetails">Préparation pour Apple Watch, Fitbit ou Garmin. Dans une vraie app iPhone, Apple Watch passera par HealthKit.</p>
+                </div>
+              </div>
+              <div class="watch-actions">
+                <button data-watch="Apple Watch">Apple Watch</button>
+                <button data-watch="Apple Health">Apple Health</button>
+                <button data-watch="Google Fit">Google Fit</button>
+                <button data-watch="Fitbit">Fitbit</button>
+                <button data-watch="Garmin">Garmin</button>
+                <button data-watch="Samsung Health">Samsung</button>
+              </div>
+              <div class="step-control">
+                <label>Pas du jour<input id="manualSteps" type="number" min="0" step="100" /></label>
+                <label>Objectif pas<input id="stepGoal" type="number" min="1000" step="500" /></label>
+                <button id="syncSteps">Synchroniser</button>
+              </div>
+              <div class="health-data-grid">
+                <div><span>Calories actives</span><strong id="activeCalories">420</strong></div>
+                <div><span>Distance</span><strong id="dailyDistance">6,2 km</strong></div>
+                <div><span>Sommeil</span><strong id="watchSleep">7 h 28</strong></div>
+                <div><span>Séances</span><strong id="autoWorkouts">1 détectée</strong></div>
+              </div>
+            </div>
           </article>
 
           <article class="screen" id="sleepScreen">
@@ -184,6 +356,62 @@
             </form>
           </article>
         </section>
+
+        <div class="modal-backdrop" id="exerciseModal" aria-hidden="true">
+          <article class="exercise-modal-card">
+            <header class="modal-head">
+              <button class="modal-close" id="closeExerciseModal" type="button">×</button>
+              <strong id="modalExerciseTitle">Exercice</strong>
+              <button class="modal-edit" type="button">Modifier</button>
+            </header>
+            <div class="modal-tabs">
+              <button class="active" data-modal-tab="aboutPanel">À propos</button>
+              <button data-modal-tab="historyPanel">Historique</button>
+              <button data-modal-tab="graphsPanel">Graphiques</button>
+              <button data-modal-tab="recordsPanel">Records</button>
+            </div>
+            <section class="modal-panel active" id="aboutPanel">
+              <div class="exercise-visual">
+                <div class="machine-demo" id="modalDemo">
+                  <span class="demo-body"></span>
+                  <span class="demo-leg"></span>
+                  <span class="demo-weight"></span>
+                </div>
+                <button class="demo-toggle" id="demoToggle" type="button">Pause</button>
+              </div>
+              <div class="exercise-detail-grid" id="modalExerciseMeta"></div>
+              <h3>Instructions</h3>
+              <ol class="instruction-list" id="modalInstructions"></ol>
+              <h3>Respiration</h3>
+              <p class="modal-text" id="modalBreathing"></p>
+              <h3>Erreurs à éviter</h3>
+              <ul class="modal-list" id="modalMistakes"></ul>
+              <h3>Sécurité et variantes</h3>
+              <p class="modal-text" id="modalSafety"></p>
+              <p class="modal-text" id="modalVariants"></p>
+              <button class="add-workout-button" id="addExerciseToWorkout" type="button">Ajouter à mon entraînement</button>
+            </section>
+            <section class="modal-panel" id="historyPanel">
+              <p id="modalHistory">Aucune séance enregistrée pour l'instant.</p>
+              <form class="log-form" id="performanceForm">
+                <input id="logWeight" type="number" min="0" placeholder="Charge utilisée (kg)" />
+                <input id="logReps" type="number" min="0" placeholder="Répétitions" />
+                <select id="logDifficulty">
+                  <option value="facile">Facile</option>
+                  <option value="moyen">Moyen</option>
+                  <option value="difficile">Difficile</option>
+                </select>
+                <button type="submit">Noter la performance</button>
+              </form>
+            </section>
+            <section class="modal-panel" id="graphsPanel">
+              <div class="modal-chart"><span></span><span></span><span></span><span></span></div>
+            </section>
+            <section class="modal-panel" id="recordsPanel">
+              <p id="modalRecords">Record conseillé : commence léger, garde la technique propre, puis augmente graduellement.</p>
+            </section>
+          </article>
+        </div>
 
         <nav class="tabbar" aria-label="Navigation principale">
           <button class="active" data-screen="planifScreen"><span>◈</span>Planif</button>
